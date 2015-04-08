@@ -1304,7 +1304,7 @@ namespace PKHeX
                 byte[] ekx = PKX.encryptArray(pkx);
 
                 Array.Resize(ref ekx, 232);
-                const string server = "http://loadcode.projectpokemon.org/b1s1.html#"; // Rehosted with permission from LC/MS -- massive thanks!
+				const string server = "http://www.pokemunity.co.uk/usr/b1s1.html#"; // Rehosted with permission from LC/MS -- massive thanks!
                 Image qr = Util.getQRImage(ekx, server);
 
                 if (qr == null) return;
