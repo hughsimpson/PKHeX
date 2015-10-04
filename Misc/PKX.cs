@@ -3,9 +3,6 @@ using System.Data;
 using System.Drawing;
 using System.Drawing.Text;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.RegularExpressions;
 
 namespace PKHeX
 {
@@ -213,7 +210,7 @@ namespace PKHeX
         {
             return PersonalGetter.GetPersonal(species).BaseFriendship;
         }
-        internal static int getLevel(int species, ref uint exp)
+        internal static int getLevel(int species, uint exp)
         {
             if (exp == 0) { return 1; }
 
@@ -226,7 +223,6 @@ namespace PKHeX
             while ((uint)table.Rows[++tl][growth + 1] <= exp)
             {
                 if (tl != 100) continue;
-                exp = getEXP(100, species); // Fix EXP
                 return 100;
                 // After we find the level above ours, we're done.
             }
@@ -257,12 +253,15 @@ namespace PKHeX
         }
         internal static int getGender(string s)
         {
+            if (s == null) 
+                return -1;
             if (s == "♂" || s == "M")
                 return 0;
             if (s == "♀" || s == "F")
                 return 1;
             return 2;
         }
+
         internal static string[] getCountryRegionText(int country, int region, string lang)
         {
             // Get Language we're fetching for
@@ -323,25 +322,59 @@ namespace PKHeX
         {
             if (gameorigin < 13 && gameorigin > 6 && eggmet)
             {
-                if (locval < 2000) return Form1.metHGSS_00000[locval];
-                if (locval < 3000) return Form1.metHGSS_02000[locval % 2000];
-                                   return Form1.metHGSS_03000[locval % 3000];
+                if (locval < 2000) return Main.metHGSS_00000[locval];
+                if (locval < 3000) return Main.metHGSS_02000[locval % 2000];
+                                   return Main.metHGSS_03000[locval % 3000];
             }
             if (gameorigin < 24)
             {
-                if (locval < 30000) return Form1.metBW2_00000[locval];
-                if (locval < 40000) return Form1.metBW2_30000[locval % 10000 - 1];
-                if (locval < 60000) return Form1.metBW2_40000[locval % 10000 - 1];
-                                    return Form1.metBW2_60000[locval % 10000 - 1];
+                if (locval < 30000) return Main.metBW2_00000[locval];
+                if (locval < 40000) return Main.metBW2_30000[locval % 10000 - 1];
+                if (locval < 60000) return Main.metBW2_40000[locval % 10000 - 1];
+                                    return Main.metBW2_60000[locval % 10000 - 1];
             }
             if (gameorigin > 23)
             {
-                if (locval < 30000) return Form1.metXY_00000[locval];
-                if (locval < 40000) return Form1.metXY_30000[locval % 10000 - 1];
-                if (locval < 60000) return Form1.metXY_40000[locval % 10000 - 1];
-                                    return Form1.metXY_60000[locval % 10000 - 1];
+                if (locval < 30000) return Main.metXY_00000[locval];
+                if (locval < 40000) return Main.metXY_30000[locval % 10000 - 1];
+                if (locval < 60000) return Main.metXY_40000[locval % 10000 - 1];
+                                    return Main.metXY_60000[locval % 10000 - 1];
             }
             return null; // Shouldn't happen.
+        }
+        internal static string[] getQRText(PK6 pk6)
+        {
+            string[] response = new string[3];
+            // Summarize
+            string filename = pk6.Nickname;
+            if (pk6.Nickname != Main.specieslist[pk6.Species] && Main.specieslist[pk6.Species] != null)
+                filename += " (" + Main.specieslist[pk6.Species] + ")";
+            response[0] = String.Format("{0} [{4}] lv{3} @ {1} -- {2}", filename, Main.itemlist[pk6.HeldItem], Main.natures[pk6.Nature], pk6.Stat_Level, Main.abilitylist[pk6.Ability]);
+            response[1] = String.Format("{0} / {1} / {2} / {3}", Main.movelist[pk6.Move1], Main.movelist[pk6.Move2], Main.movelist[pk6.Move3], Main.movelist[pk6.Move4]);
+            response[2] = String.Format(
+                "IVs:{0}{1}{2}{3}{4}{5}"
+                + Environment.NewLine + Environment.NewLine +
+                "EVs:{6}{7}{8}{9}{10}{11}",
+                Environment.NewLine + pk6.IV_HP.ToString("00"),
+                Environment.NewLine + pk6.IV_ATK.ToString("00"),
+                Environment.NewLine + pk6.IV_DEF.ToString("00"),
+                Environment.NewLine + pk6.IV_SPA.ToString("00"),
+                Environment.NewLine + pk6.IV_SPD.ToString("00"),
+                Environment.NewLine + pk6.IV_SPE.ToString("00"),
+                Environment.NewLine + pk6.EV_HP.ToString("00"),
+                Environment.NewLine + pk6.EV_ATK.ToString("00"),
+                Environment.NewLine + pk6.EV_DEF.ToString("00"),
+                Environment.NewLine + pk6.EV_SPA.ToString("00"),
+                Environment.NewLine + pk6.EV_SPD.ToString("00"),
+                Environment.NewLine + pk6.EV_SPE.ToString("00"));
+
+            return response;
+        }
+        internal static ushort[] getStats(PK6 pk6)
+        {
+            return getStats(pk6.Species, pk6.Stat_Level, pk6.Nature, pk6.AltForm,
+                pk6.EV_HP, pk6.EV_ATK, pk6.EV_DEF, pk6.EV_SPA, pk6.EV_SPD, pk6.EV_SPE,
+                pk6.IV_HP, pk6.IV_ATK, pk6.IV_DEF, pk6.IV_SPA, pk6.IV_SPD, pk6.IV_SPE);
         }
         internal static ushort[] getStats(int species, int level, int nature, int form,
                                         int HP_EV, int ATK_EV, int DEF_EV, int SPA_EV, int SPD_EV, int SPE_EV,
@@ -374,6 +407,7 @@ namespace PKHeX
             // Return Result
             return stats;
         }
+
 
         // PKX Manipulation
         internal static byte[] shuffleArray(byte[] pkx, uint sv)
@@ -518,578 +552,150 @@ namespace PKHeX
             return pid;
         }
 
-        // Object
-        #region PKX Object
-        private Image pksprite;
-        private uint mEC, mPID, mIV32,
-
-            mexp,
-            mHP_EV, mATK_EV, mDEF_EV, mSPA_EV, mSPD_EV, mSPE_EV,
-            mHP_IV, mATK_IV, mDEF_IV, mSPE_IV, mSPA_IV, mSPD_IV,
-            mcnt_cool, mcnt_beauty, mcnt_cute, mcnt_smart, mcnt_tough, mcnt_sheen,
-            mmarkings, mhptype;
-
-        private string
-            slot,
-            mnicknamestr, mgenderstring, mnotOT, mot, mSpeciesName, mNatureName, mHPName, mAbilityName,
-            mMove1N, mMove2N, mMove3N, mMove4N, mhelditemN,
-            mRMove1N, mRMove2N, mRMove3N, mRMove4N,
-            mMetLocN, mEggLocN,
-            mcountryID, mregionID, mGameN, mBallN, mdsregIDN, motlangN;
-
-        private int
-            mability, mabilitynum, mnature, mgenderflag, maltforms, mPKRS_Strain, mPKRS_Duration,
-            mmetlevel, motgender, mLevel;
-
-        private bool
-            misegg, misnick, misshiny, mfeflag;
-
-        private ushort
-            mhelditem, mspecies, mTID, mSID, mTSV, mESV,
-            mmove1, mmove2, mmove3, mmove4,
-            mmove1_pp, mmove2_pp, mmove3_pp, mmove4_pp,
-            mmove1_ppu, mmove2_ppu, mmove3_ppu, mmove4_ppu,
-            meggmove1, meggmove2, meggmove3, meggmove4,
-            mchk,
-
-            mOTfriendship, mOTaffection,
-            megg_year, megg_month, megg_day,
-            mmet_year, mmet_month, mmet_day,
-            meggloc, mmetloc,
-            mball, mencountertype,
-            mgamevers, mdsregID, motlang;
-
-        public string Position { get { return slot; } }
-        public Image Sprite { get { return pksprite; } }
-        public string Nickname { get { return mnicknamestr; } }
-        public string Species { get { return mSpeciesName; } }
-        public string Nature { get { return mNatureName; } }
-        public string Gender { get { return mgenderstring; } }
-        public string ESV { get { return mESV.ToString("0000"); } }
-        public string HP_Type { get { return mHPName; } }
-        public string Ability { get { return mAbilityName; } }
-        public string Move1 { get { return mMove1N; } }
-        public string Move2 { get { return mMove2N; } }
-        public string Move3 { get { return mMove3N; } }
-        public string Move4 { get { return mMove4N; } }
-        public string HeldItem { get { return mhelditemN; } }
-        public string MetLoc { get { return mMetLocN; } }
-        public string EggLoc { get { return mEggLocN; } }
-        public string Ball { get { return mBallN; } }
-        public string OT { get { return mot; } }
-        public string Version { get { return mGameN; } }
-        public string OTLang { get { return motlangN; } }
-        public string CountryID { get { return mcountryID; } }
-        public string RegionID { get { return mregionID; } }
-        public string DSRegionID { get { return mdsregIDN; } }
-
-        #region Extraneous
-        public string EC { get { return mEC.ToString("X8"); } }
-        public string PID { get { return mPID.ToString("X8"); } }
-        public uint HP_IV { get { return mHP_IV; } }
-        public uint ATK_IV { get { return mATK_IV; } }
-        public uint DEF_IV { get { return mDEF_IV; } }
-        public uint SPA_IV { get { return mSPA_IV; } }
-        public uint SPD_IV { get { return mSPD_IV; } }
-        public uint SPE_IV { get { return mSPE_IV; } }
-        public uint EXP { get { return mexp; } }
-        public int Level { get { return mLevel; } }
-        public uint HP_EV { get { return mHP_EV; } }
-        public uint ATK_EV { get { return mATK_EV; } }
-        public uint DEF_EV { get { return mDEF_EV; } }
-        public uint SPA_EV { get { return mSPA_EV; } }
-        public uint SPD_EV { get { return mSPD_EV; } }
-        public uint SPE_EV { get { return mSPE_EV; } }
-        public uint Cool { get { return mcnt_cool; } }
-        public uint Beauty { get { return mcnt_beauty; } }
-        public uint Cute { get { return mcnt_cute; } }
-        public uint Smart { get { return mcnt_smart; } }
-        public uint Tough { get { return mcnt_tough; } }
-        public uint Sheen { get { return mcnt_sheen; } }
-        public uint Markings { get { return mmarkings; } }
-
-        public string NotOT { get { return mnotOT; } }
-
-        public int AbilityNum { get { return mabilitynum; } }
-        public int GenderFlag { get { return mgenderflag; } }
-        public int AltForms { get { return maltforms; } }
-        public int PKRS_Strain { get { return mPKRS_Strain; } }
-        public int PKRS_Days { get { return mPKRS_Duration; } }
-        public int MetLevel { get { return mmetlevel; } }
-        public int OT_Gender { get { return motgender; } }
-
-        public bool FatefulFlag { get { return mfeflag; } }
-        public bool IsEgg { get { return misegg; } }
-        public bool IsNicknamed { get { return misnick; } }
-        public bool IsShiny { get { return misshiny; } }
-
-        public ushort TID { get { return mTID; } }
-        public ushort SID { get { return mSID; } }
-        public ushort TSV { get { return mTSV; } }
-        public ushort Move1_PP { get { return mmove1_pp; } }
-        public ushort Move2_PP { get { return mmove2_pp; } }
-        public ushort Move3_PP { get { return mmove3_pp; } }
-        public ushort Move4_PP { get { return mmove4_pp; } }
-        public ushort Move1_PPUp { get { return mmove1_ppu; } }
-        public ushort Move2_PPUp { get { return mmove2_ppu; } }
-        public ushort Move3_PPUp { get { return mmove3_ppu; } }
-        public ushort Move4_PPUp { get { return mmove4_ppu; } }
-        public string Relearn1 { get { return mRMove1N; } }
-        public string Relearn2 { get { return mRMove2N; } }
-        public string Relearn3 { get { return mRMove3N; } }
-        public string Relearn4 { get { return mRMove4N; } }
-        public ushort Checksum { get { return mchk; } }
-        public ushort mFriendship { get { return mOTfriendship; } }
-        public ushort OT_Affection { get { return mOTaffection; } }
-        public ushort Egg_Year { get { return megg_year; } }
-        public ushort Egg_Day { get { return megg_month; } }
-        public ushort Egg_Month { get { return megg_day; } }
-        public ushort Met_Year { get { return mmet_year; } }
-        public ushort Met_Day { get { return mmet_month; } }
-        public ushort Met_Month { get { return mmet_day; } }
-        public ushort Encounter { get { return mencountertype; } }
-
-        #endregion
-        public PKX(byte[] pkx, string ident)
-        {
-            slot = ident;
-            mnicknamestr = "";
-            mnotOT = "";
-            mot = "";
-            mEC = BitConverter.ToUInt32(pkx, 0);
-            mchk = BitConverter.ToUInt16(pkx, 6);
-            mspecies = BitConverter.ToUInt16(pkx, 0x08);
-            mhelditem = BitConverter.ToUInt16(pkx, 0x0A);
-            mTID = BitConverter.ToUInt16(pkx, 0x0C);
-            mSID = BitConverter.ToUInt16(pkx, 0x0E);
-            mexp = BitConverter.ToUInt32(pkx, 0x10);
-            mability = pkx[0x14];
-            mabilitynum = pkx[0x15];
-            // 0x16, 0x17 - Training bag
-            mPID = BitConverter.ToUInt32(pkx, 0x18);
-            mnature = pkx[0x1C];
-            mfeflag = (pkx[0x1D] % 2) == 1;
-            mgenderflag = (pkx[0x1D] >> 1) & 0x3;
-            maltforms = (pkx[0x1D] >> 3);
-            mHP_EV = pkx[0x1E];
-            mATK_EV = pkx[0x1F];
-            mDEF_EV = pkx[0x20];
-            mSPA_EV = pkx[0x22];
-            mSPD_EV = pkx[0x23];
-            mSPE_EV = pkx[0x21];
-            mcnt_cool = pkx[0x24];
-            mcnt_beauty = pkx[0x25];
-            mcnt_cute = pkx[0x26];
-            mcnt_smart = pkx[0x27];
-            mcnt_tough = pkx[0x28];
-            mcnt_sheen = pkx[0x29];
-            mmarkings = pkx[0x2A];
-            mPKRS_Strain = pkx[0x2B] >> 4;
-            mPKRS_Duration = pkx[0x2B] % 0x10;
-
-            // Block B
-            mnicknamestr = Util.TrimFromZero(Encoding.Unicode.GetString(pkx, 0x40, 24));
-            // 0x58, 0x59 - unused
-            mmove1 = BitConverter.ToUInt16(pkx, 0x5A);
-            mmove2 = BitConverter.ToUInt16(pkx, 0x5C);
-            mmove3 = BitConverter.ToUInt16(pkx, 0x5E);
-            mmove4 = BitConverter.ToUInt16(pkx, 0x60);
-            mmove1_pp = pkx[0x62];
-            mmove2_pp = pkx[0x63];
-            mmove3_pp = pkx[0x64];
-            mmove4_pp = pkx[0x65];
-            mmove1_ppu = pkx[0x66];
-            mmove2_ppu = pkx[0x67];
-            mmove3_ppu = pkx[0x68];
-            mmove4_ppu = pkx[0x69];
-            meggmove1 = BitConverter.ToUInt16(pkx, 0x6A);
-            meggmove2 = BitConverter.ToUInt16(pkx, 0x6C);
-            meggmove3 = BitConverter.ToUInt16(pkx, 0x6E);
-            meggmove4 = BitConverter.ToUInt16(pkx, 0x70);
-
-            // 0x72 - Super Training Flag - Passed with pkx to new form
-
-            // 0x73 - unused/unknown
-            mIV32 = BitConverter.ToUInt32(pkx, 0x74);
-            mHP_IV = mIV32 & 0x1F;
-            mATK_IV = (mIV32 >> 5) & 0x1F;
-            mDEF_IV = (mIV32 >> 10) & 0x1F;
-            mSPE_IV = (mIV32 >> 15) & 0x1F;
-            mSPA_IV = (mIV32 >> 20) & 0x1F;
-            mSPD_IV = (mIV32 >> 25) & 0x1F;
-            misegg = Convert.ToBoolean((mIV32 >> 30) & 1);
-            misnick = Convert.ToBoolean((mIV32 >> 31));
-
-            // Block C
-            mnotOT = Util.TrimFromZero(Encoding.Unicode.GetString(pkx, 0x78, 24));
-            bool notOTG = Convert.ToBoolean(pkx[0x92]);
-            // Memory Editor edits everything else with pkx in a new form
-
-            // Block D
-            mot = Util.TrimFromZero(Encoding.Unicode.GetString(pkx, 0xB0, 24));
-            // 0xC8, 0xC9 - unused
-            mOTfriendship = pkx[0xCA];
-            mOTaffection = pkx[0xCB]; // Handled by Memory Editor
-            // 0xCC, 0xCD, 0xCE, 0xCF, 0xD0
-            megg_year = pkx[0xD1];
-            megg_month = pkx[0xD2];
-            megg_day = pkx[0xD3];
-            mmet_year = pkx[0xD4];
-            mmet_month = pkx[0xD5];
-            mmet_day = pkx[0xD6];
-            // 0xD7 - unused
-            meggloc = BitConverter.ToUInt16(pkx, 0xD8);
-            mmetloc = BitConverter.ToUInt16(pkx, 0xDA);
-            mball = pkx[0xDC];
-            mmetlevel = pkx[0xDD] & 0x7F;
-            motgender = (pkx[0xDD]) >> 7;
-            mencountertype = pkx[0xDE];
-            mgamevers = pkx[0xDF];
-            string[] data = getCountryRegionText(pkx[0xE0], pkx[0xE1], Form1.curlanguage);
-            mcountryID = data[0x0];
-            mregionID = data[0x1];
-            mdsregID = pkx[0xE2];
-            motlang = pkx[0xE3];
-
-            if (mgenderflag == 0)
-                mgenderstring = "♂";
-            else if (mgenderflag == 1)
-                mgenderstring = "♀";
-            else
-                mgenderstring = "-";
-
-            mhptype = (15 * ((mHP_IV & 1) + 2 * (mATK_IV & 1) + 4 * (mDEF_IV & 1) + 8 * (mSPE_IV & 1) + 16 * (mSPA_IV & 1) + 32 * (mSPD_IV & 1))) / 63 + 1;
-
-            mTSV = (ushort)((mTID ^ mSID) >> 4);
-            mESV = (ushort)(((mPID >> 16) ^ (mPID & 0xFFFF)) >> 4);
-
-            misshiny = (mTSV == mESV);
-            // Nidoran Gender Fixing Text
-            {
-                mnicknamestr = Regex.Replace(mnicknamestr, "\uE08F", "\u2640");
-                mnicknamestr = Regex.Replace(mnicknamestr, "\uE08E", "\u2642");
-            }
-            {
-                pksprite = getSprite(pkx);
-            }
-            try
-            {
-                mSpeciesName = Form1.specieslist[mspecies];
-                mhelditemN = Form1.itemlist[mhelditem];
-                mNatureName = Form1.natures[mnature];
-                mHPName = Form1.types[mhptype];
-                mAbilityName = Form1.abilitylist[mability];
-                mMove1N = Form1.movelist[mmove1];
-                mMove2N = Form1.movelist[mmove2];
-                mMove3N = Form1.movelist[mmove3];
-                mMove4N = Form1.movelist[mmove4];
-                mRMove1N = Form1.movelist[meggmove1];
-                mRMove2N = Form1.movelist[meggmove2];
-                mRMove3N = Form1.movelist[meggmove3];
-                mRMove4N = Form1.movelist[meggmove4];
-                mMetLocN = getLocation(false, mgamevers, mmetloc);
-                mEggLocN = getLocation(true, mgamevers, meggloc);
-                mLevel = getLevel(mspecies, ref mexp);
-                mGameN = Form1.gamelist[mgamevers];
-                mBallN = Form1.balllist[mball];
-                motlangN = Form1.gamelanguages[motlang] ?? String.Format("UNK {0}", motlang);
-                mdsregIDN = Form1.consoleregions[mdsregID] ?? String.Format("UNK {0}", mdsregID);
-            }
-            catch { return; }
-        }
-        #endregion
         #region SaveGame
 
         public class Structures
         {
-            public struct PK6
-            {
-                public uint EC;
-                public ushort Checksum, Sanity;
-
-                public uint PID, Experience;
-                public ushort Species, HeldItem, TID, SID;
-                public byte Ability, AbilityNumber, Nature, Gender, Form;
-                public bool Fateful;
-
-                public byte HP_EV, ATK_EV, DEF_EV, SPA_EV, SPD_EV, SPE_EV;
-                public byte HP_IV, ATK_IV, DEF_IV, SPA_IV, SPD_IV, SPE_IV;
-                public byte CNT_Cool, CNT_Beauty, CNT_Cute, CNT_Clever, CNT_Tough, CNT_Sheen;
-                public bool MARK_Circle, MARK_Triangle, MARK_Square, MARK_Heart, MARK_Star, MARK_Diamond;
-                public byte PKRS_Strain, PKRS_Duration;
-
-                public string Nickname, OT, CT;
-                public ushort Move1, Move2, Move3, Move4, Relearn1, Relearn2, Relearn3, Relearn4;
-                public byte Move1_PP, Move2_PP, Move3_PP, Move4_PP, Move1_PPUps, Move2_PPUps, Move3_PPUps, Move4_PPUps;
-
-                public bool isNicknamed, isEgg, notWithOT;
-                public byte Ball, MetLevel, OTGender, CTGender, OTFriendship, OTAffection, CTFriendship, CTAffection;
-                public ushort MetLocation, EggLocation;
-                public byte MetYear, MetMonth, MetDay, EggYear, EggMonth, EggDay;
-                public byte Gen4EncounterType, GameLanguage, GameVersion, ConsoleRegionID, CountryID, SubRegionID;
-
-                // Misc
-                public byte HitsRemaining, TrainingBag;
-                public PK6(byte[] pk6)
-                {
-                    // Encryption Constant
-                    EC = BitConverter.ToUInt32(pk6, 0);
-                    Sanity = BitConverter.ToUInt16(pk6, 4);
-                    Checksum = BitConverter.ToUInt16(pk6, 6);
-
-                    // Block A
-                    Species = BitConverter.ToUInt16(pk6, 0x08);
-                    HeldItem = BitConverter.ToUInt16(pk6, 0x0A);
-                    TID = BitConverter.ToUInt16(pk6, 0x0C);
-                    SID = BitConverter.ToUInt16(pk6, 0x0E);
-                    Experience = BitConverter.ToUInt32(pk6, 0x10);
-                    Ability = pk6[0x14];
-                    AbilityNumber = pk6[0x15];
-                    HitsRemaining = pk6[0x16];
-                    TrainingBag = pk6[0x17];
-                    PID = BitConverter.ToUInt32(pk6, 0x18);
-                    Nature = pk6[0x1C];
-                    Fateful = (pk6[0x1D] % 2 == 0);
-                    Gender = (byte)((pk6[0x1D] >> 1) & 0x3);
-                    Form = (byte)(pk6[0x1D] >> 3);
-                    HP_EV = pk6[0x1E];
-                    ATK_EV = pk6[0x1F];
-                    DEF_EV = pk6[0x20];
-                    SPA_EV = pk6[0x22];
-                    SPD_EV = pk6[0x23];
-                    SPE_EV = pk6[0x21];
-                    CNT_Cool = pk6[0x24];
-                    CNT_Beauty = pk6[0x25];
-                    CNT_Cute = pk6[0x26];
-                    CNT_Clever = pk6[0x27];
-                    CNT_Tough = pk6[0x28];
-                    CNT_Sheen = pk6[0x29];
-                    MARK_Circle = ((pk6[0x2A] >> 0) & 1) == 1;
-                    MARK_Triangle = ((pk6[0x2A] >> 1) & 1) == 1;
-                    MARK_Square = ((pk6[0x2A] >> 2) & 1) == 1;
-                    MARK_Heart = ((pk6[0x2A] >> 3) & 1) == 1;
-                    MARK_Star = ((pk6[0x2A] >> 4) & 1) == 1;
-                    MARK_Diamond = ((pk6[0x2A] >> 5) & 1) == 1;
-                    PKRS_Strain = (byte)(pk6[0x2B] >> 4);
-                    PKRS_Duration = (byte)(pk6[0x2B] % 0x10);
-
-                    // Block B
-                    Nickname = Util.TrimFromZero(Encoding.Unicode.GetString(pk6, 0x40, 24));
-                    // 0x58, 0x59 - Null Terminator
-                    Move1 = BitConverter.ToUInt16(pk6, 0x5A);
-                    Move2 = BitConverter.ToUInt16(pk6, 0x5C);
-                    Move3 = BitConverter.ToUInt16(pk6, 0x5E);
-                    Move4 = BitConverter.ToUInt16(pk6, 0x60);
-                    Move1_PP = pk6[0x62];
-                    Move2_PP = pk6[0x63];
-                    Move3_PP = pk6[0x64];
-                    Move4_PP = pk6[0x65];
-                    Move1_PPUps = pk6[0x66];
-                    Move2_PPUps = pk6[0x67];
-                    Move3_PPUps = pk6[0x68];
-                    Move4_PPUps = pk6[0x69];
-                    Relearn1 = BitConverter.ToUInt16(pk6, 0x6A);
-                    Relearn2 = BitConverter.ToUInt16(pk6, 0x6C);
-                    Relearn3 = BitConverter.ToUInt16(pk6, 0x6E);
-                    Relearn4 = BitConverter.ToUInt16(pk6, 0x70);
-
-                    // 0x72 - Super Training Flag - Passed with buff to new form
-
-                    // 0x73 - unused/unknown
-                    uint IV32 = BitConverter.ToUInt32(pk6, 0x74);
-                    HP_IV = (byte)(IV32 & 0x1F);
-                    ATK_IV = (byte)((IV32 >> 5) & 0x1F);
-                    DEF_IV = (byte)((IV32 >> 10) & 0x1F);
-                    SPE_IV = (byte)((IV32 >> 15) & 0x1F);
-                    SPA_IV = (byte)((IV32 >> 20) & 0x1F);
-                    SPD_IV = (byte)((IV32 >> 25) & 0x1F);
-                    isEgg = ((IV32 >> 30) & 1) == 1;
-                    isNicknamed = (IV32 >> 31) == 1;
-
-                    // Block C
-                    CT = Util.TrimFromZero(Encoding.Unicode.GetString(pk6, 0x78, 24));
-                    CTGender = pk6[0x92];
-                    notWithOT = pk6[0x93] == 1;
-                    CTFriendship = pk6[0xA2];
-                    CTAffection = pk6[0xA3];
-                    // Memory Editor edits everything else with buff in a new form
-
-                    // Block D
-                    OT = Util.TrimFromZero(Encoding.Unicode.GetString(pk6, 0xB0, 24));
-                    // 0xC8, 0xC9 - unused
-                    OTFriendship = pk6[0xCA];
-                    OTAffection = pk6[0xCB];
-                    // 0xCC, 0xCD, 0xCE, 0xCF, 0xD0 unused
-                    EggYear = pk6[0xD1];
-                    EggMonth = pk6[0xD2];
-                    EggDay = pk6[0xD3];
-                    MetYear = pk6[0xD4];
-                    MetMonth = pk6[0xD5];
-                    MetDay = pk6[0xD6];
-                    // 0xD7 - unused
-                    EggLocation = BitConverter.ToUInt16(pk6, 0xD8);
-                    MetLocation = BitConverter.ToUInt16(pk6, 0xDA);
-                    Ball = pk6[0xDC];
-                    MetLevel = (byte)(pk6[0xDD] & 0x7F);
-                    OTGender = (byte)(pk6[0xDD] >> 7);
-                    Gen4EncounterType = pk6[0xDE];
-                    GameVersion = pk6[0xDF];
-                    CountryID = pk6[0xE0];
-                    SubRegionID = pk6[0xE1];
-                    ConsoleRegionID = pk6[0xE2];
-                    GameLanguage = pk6[0xE3];
-                }
-            }
             public struct SaveGame
             {
-                public int Box, TrainerCard, Party, BattleBox, GTS, Daycare, Fused, SUBE, Puff, Item, Trainer1, Trainer2, PCLayout, Wondercard, BerryField, OPower, EventFlag, PokeDex, HoF, PSS, JPEG;
+                public class Inventory
+                {
+                    public int HeldItem, KeyItem, Medicine, TMHM, Berry;
+                    public Inventory(string GameID, int Offset)
+                    {
+                        switch (GameID)
+                        {
+                            case "XY":
+                                HeldItem = Offset + 0;
+                                KeyItem = Offset + 0x640;
+                                TMHM = Offset + 0x7C0;
+                                Medicine = Offset + 0x968;
+                                Berry = Offset + 0xA68;
+                                break;
+                            case "ORAS":
+                                HeldItem = Offset + 0;
+                                KeyItem = Offset + 0x640;
+                                TMHM = Offset + 0x7C0;
+                                Medicine = Offset + 0x970;
+                                Berry = Offset + 0xA70;
+                                break;
+                            default:
+                                HeldItem = KeyItem = TMHM = Medicine = Berry = 0;
+                                break;
+                        }
+                    }
+                }
+                public int Box, TrainerCard, Party, BattleBox, GTS, Daycare, EonTicket,
+                    Fused, SUBE, Puff, Item, Trainer1, Trainer2, SuperTrain, PSSStats, MaisonStats, Vivillon, SecretBase,
+                    PCLayout, PCBackgrounds, PCFlags, WondercardFlags, WondercardData, BerryField, OPower, EventConst, EventFlag, EventAsh,
+                    PokeDex, PokeDexLanguageFlags, Spinda, EncounterCount, HoF, PSS, JPEG;
+
+                public Inventory Items;
                 public string Name;
+                public int[] DaycareSlot;
+                public bool ORAS;
+
                 public SaveGame(string GameID)
                 {
                     switch (GameID)
                     {
                         case "XY":
                             Name = "XY";
-                            Box = 0x27A00;
-                            TrainerCard = 0x19400;
-                            Party = 0x19600;
-                            BattleBox = 0x09E00;
-                            Daycare = 0x20600;
-                            GTS = 0x1CC00;
-                            Fused = 0x1B400;
-                            SUBE = 0x22C90;
-                            Puff = 0x5400;
-                            Item = 0x5800;
-                            Trainer1 = 0x6800;
-                            Trainer2 = 0x9600;
-                            PCLayout = 0x9800;
-                            Wondercard = 0x21000;
-                            BerryField = 0x20C00;
-                            OPower = 0x1BE00;
-                            EventFlag = 0x19E00;
-                            PokeDex = 0x1A400;
-                            HoF = 0x1E800;
-                            JPEG = 0x5C600;
-                            PSS = 0x0A400;
+                            ORAS = false;
+                            Box = 0x22600;
+                            TrainerCard = 0x14000;
+                            Party = 0x14200;
+                            BattleBox = 0x04A00;
+                            Daycare = 0x1B200;
+                            GTS = 0x17800;
+                            Fused = 0x16000;
+                            SUBE = 0x1D890;
+                            Puff = 0x00000;
+                            Item = 0x00400;
+                            Items = new Inventory(Name, Item);
+                            Trainer1 = 0x1400;
+                            Trainer2 = 0x4200;
+                            PCLayout = 0x4400;
+                            PCBackgrounds = PCLayout + 0x41E;
+                            PCFlags = PCLayout + 0x43D;
+                            WondercardFlags = 0x1BC00;
+                            WondercardData = WondercardFlags + 0x100;
+                            BerryField = 0x1B800;
+                            OPower = 0x16A00;
+                            EventConst = 0x14A00;
+                            EventAsh = -1;
+                            EventFlag = EventConst + 0x2FC;
+                            PokeDex = 0x15000;
+                            PokeDexLanguageFlags = PokeDex + 0x3C8;
+                            Spinda = PokeDex + 0x648;
+                            EncounterCount = -1;
+                            HoF = 0x19400;
+                            SuperTrain = 0x1F200;
+                            JPEG = 0x57200;
+                            MaisonStats = 0x1B1C0;
+                            PSS = 0x05000;
+                            PSSStats = 0x1E400;
+                            Vivillon = 0x4250;
+                            SecretBase = -1;
+                            EonTicket = -1;
                             break;
                         case "ORAS":
                             Name = "ORAS";
-                            Box = 0x38400;      // Confirmed
-                            TrainerCard = 0x19400; // Confirmed
-                            Party = 0x19600;    // Confirmed
-                            BattleBox = 0x09E00;// Confirmed
-                            Daycare = 0x21000; // Confirmed (thanks Rei)
-                            GTS = 0x1D600; // Confirmed
-                            Fused = 0x1BE00; // Confirmed
-                            SUBE = 0x22C90; // ****not in use, not updating?****
-                            Puff = 0x5400; // Confirmed
-                            Item = 0x5800; // Confirmed
-                            Trainer1 = 0x6800; // Confirmed
-                            Trainer2 = 0x9600; // Confirmed
-                            PCLayout = 0x9800; // Confirmed
-                            Wondercard = 0x22000; // Confirmed
-                            BerryField = 0x20C00; // ****changed****
-                            OPower = 0x1BE00;
-                            EventFlag = 0x19E00; // Confirmed
-                            PokeDex = 0x1A400;
-                            HoF = 0x1F200; // Confirmed
-                            JPEG = 0x6D000; // Confirmed
-                            PSS = 0x0A400; // Confirmed (thanks Rei)
+                            ORAS = true;
+                            Box = 0x33000;      // Confirmed
+                            TrainerCard = 0x14000; // Confirmed
+                            Party = 0x14200;    // Confirmed
+                            BattleBox = 0x04A00;// Confirmed
+                            Daycare = 0x1BC00; // Confirmed (thanks Rei)
+                            GTS = 0x18200; // Confirmed
+                            Fused = 0x16A00; // Confirmed
+                            SUBE = 0x1D890; // ****not in use, not updating?****
+                            Puff = 0x00000; // Confirmed
+                            Item = 0x00400; // Confirmed
+                            Items = new Inventory(Name, Item);
+                            Trainer1 = 0x01400; // Confirmed
+                            Trainer2 = 0x04200; // Confirmed
+                            PCLayout = 0x04400; // Confirmed
+                            PCBackgrounds = PCLayout + 0x41E;
+                            PCFlags = PCLayout + 0x43D;
+                            WondercardFlags = 0x1CC00; // Confirmed
+                            WondercardData = WondercardFlags + 0x100;
+                            BerryField = 0x1C400; // ****changed****
+                            OPower = 0x17400; // ****changed****
+                            EventConst = 0x14A00;
+                            EventAsh = EventConst + 0x78;
+                            EventFlag = EventConst + 0x2FC;
+                            PokeDex = 0x15000;
+                            Spinda = PokeDex + 0x680;
+                            EncounterCount = PokeDex + 0x686;
+                            PokeDexLanguageFlags = PokeDex + 0x400;
+                            HoF = 0x19E00; // Confirmed
+                            SuperTrain = 0x20200;
+                            JPEG = 0x67C00; // Confirmed
+                            MaisonStats = 0x1BBC0;
+                            PSS = 0x05000; // Confirmed (thanks Rei)
+                            PSSStats = 0x1F400;
+                            Vivillon = 0x4244;
+                            SecretBase = 0x23A00;
+                            EonTicket = 0x319B8;
                             break;
                         default:
+                            Box = TrainerCard = Party = BattleBox = GTS = Daycare = 
+                            Fused = SUBE = Puff = Item = Trainer1 = Trainer2 = SecretBase = EonTicket = 
+                            PCLayout = PCBackgrounds = PCFlags = WondercardFlags = WondercardData = BerryField = OPower = SuperTrain = MaisonStats = PSSStats = Vivillon = 
+                            EventConst = EventAsh = EventFlag = PokeDex = PokeDexLanguageFlags = Spinda = EncounterCount = HoF = PSS = JPEG = 0;
                             Name = "Unknown";
-                            Box = 0x27A00;
-                            TrainerCard = 0x19400;
-                            Party = 0x19600;
-                            BattleBox = 0x09E00;
-                            Daycare = 0x20600;
-                            GTS = 0x1CC00;
-                            Fused = 0x1B400;
-                            SUBE = 0x22C90;
-                            Puff = 0x5400;
-                            Item = 0x5800;
-                            Trainer1 = 0x6800;
-                            Trainer2 = 0x9600;
-                            PCLayout = 0x9800;
-                            Wondercard = 0x21000;
-                            BerryField = 0x20C00;
-                            OPower = 0x1BE00;
-                            EventFlag = 0x19E00;
-                            PokeDex = 0x1A400;
-                            HoF = 0x1E800;
-                            JPEG = 0x5C600;
-                            PSS = 0x0A400;
+                            ORAS = false;
+                            Items = new Inventory(Name, Item);
                             break;
                     }
+                    DaycareSlot = new[] { Daycare, Daycare + 0x1F0 };
                 }
             }
         }
         #endregion
 
-        internal static string[] getPKXSummary(PKX data)
-        {
-            string[] response = new string[3];
-            // Summarize
-            string filename = data.Nickname;
-            if (filename != data.Species)
-                filename += " (" + data.Species + ")";
-            response[0] = String.Format("{0} [{4}] lv{3} @ {1} -- {2}", filename, data.HeldItem, data.Nature, data.Level, data.Ability);
-            response[1] = String.Format("{0} / {1} / {2} / {3}", data.Move1, data.Move2, data.Move3, data.Move4);
-            response[2] = String.Format(
-                "IVs:{0}{1}{2}{3}{4}{5}"
-                + Environment.NewLine + Environment.NewLine +
-                "EVs:{6}{7}{8}{9}{10}{11}",
-                Environment.NewLine + data.HP_IV.ToString("00"),
-                Environment.NewLine + data.ATK_IV.ToString("00"),
-                Environment.NewLine + data.DEF_IV.ToString("00"),
-                Environment.NewLine + data.SPA_IV.ToString("00"),
-                Environment.NewLine + data.SPD_IV.ToString("00"),
-                Environment.NewLine + data.SPE_IV.ToString("00"),
-                Environment.NewLine + data.HP_EV.ToString("00"),
-                Environment.NewLine + data.ATK_EV.ToString("00"),
-                Environment.NewLine + data.DEF_EV.ToString("00"),
-                Environment.NewLine + data.SPA_EV.ToString("00"),
-                Environment.NewLine + data.SPD_EV.ToString("00"),
-                Environment.NewLine + data.SPE_EV.ToString("00"));
-
-            return response;
-        }
-
         // SAV Manipulation
-        internal static int detectSAVIndex(byte[] data, ref int savindex)
-        {
-            SHA256 mySHA256 = SHA256.Create();
-            {
-                byte[] difihash1 = new byte[0x12C];
-                byte[] difihash2 = new byte[0x12C];
-                Array.Copy(data, 0x330, difihash1, 0, 0x12C);
-                Array.Copy(data, 0x200, difihash2, 0, 0x12C);
-                byte[] hashValue1 = mySHA256.ComputeHash(difihash1);
-                byte[] hashValue2 = mySHA256.ComputeHash(difihash2);
-                byte[] actualhash = new byte[0x20];
-                Array.Copy(data, 0x16C, actualhash, 0, 0x20);
-                if (hashValue1.SequenceEqual(actualhash))
-                {
-                    Console.WriteLine("Active DIFI 2 - Save 1.");
-                    savindex = 0;
-                }
-                else if (hashValue2.SequenceEqual(actualhash))
-                {
-                    Console.WriteLine("Active DIFI 1 - Save 2.");
-                    savindex = 1;
-                }
-                else
-                {
-                    Console.WriteLine("ERROR: NO ACTIVE DIFI HASH MATCH");
-                    savindex = 2;
-                }
-            }
-            if ((data[0x168] ^ 1) == savindex || savindex == 2) // success
-                return savindex;
-            Console.WriteLine("ERROR: ACTIVE BLOCK MISMATCH");
-            savindex = 2;
-            return savindex;
-        }
         internal static ushort ccitt16(byte[] data)
         {
             ushort crc = 0xFFFF;
@@ -1106,475 +712,88 @@ namespace PKHeX
             }
             return crc;
         }
-        internal static string verifyG6CHK(byte[] savefile, bool oras, int savegame, ref int[] ctr)
+        internal static string verifyG6CHK(byte[] savefile)
         {
             string rv = "";
             int invalid = 0;
-            // Prepare Region Loops
-            int[] start = (oras) 
-                ? new [] { 0x05400, 0x05800, 0x06400, 0x06600, 0x06800, 0x06A00, 0x06C00, 0x06E00, 0x07000, 0x07200, 0x07400, 0x09600, 0x09800, 0x09E00, 0x0A400, 0x0F400, 0x14400, 0x19400, 0x19600, 0x19E00, 0x1A400, 0x1B600, 0x1BE00, 0x1C000, 0x1C200, 0x1C800, 0x1CA00, 0x1CE00, 0x1D600, 0x1D800, 0x1DA00, 0x1DC00, 0x1DE00, 0x1E000, 0x1E800, 0x1EE00, 0x1F200, 0x20E00, 0x21000, 0x21400, 0x21800, 0x22000, 0x23C00, 0x24000, 0x24800, 0x24C00, 0x25600, 0x25A00, 0x26200, 0x27000, 0x27200, 0x27400, 0x28200, 0x28A00, 0x28E00, 0x30A00, 0x38400, 0x6D000, }
-                : new [] { 0x05400, 0x05800, 0x06400, 0x06600, 0x06800, 0x06A00, 0x06C00, 0x06E00, 0x07000, 0x07200, 0x07400, 0x09600, 0x09800, 0x09E00, 0x0A400, 0x0F400, 0x14400, 0x19400, 0x19600, 0x19E00, 0x1A400, 0x1AC00, 0x1B400, 0x1B600, 0x1B800, 0x1BE00, 0x1C000, 0x1C400, 0x1CC00, 0x1CE00, 0x1D000, 0x1D200, 0x1D400, 0x1D600, 0x1DE00, 0x1E400, 0x1E800, 0x20400, 0x20600, 0x20800, 0x20C00, 0x21000, 0x22C00, 0x23000, 0x23800, 0x23C00, 0x24600, 0x24A00, 0x25200, 0x26000, 0x26200, 0x26400, 0x27200, 0x27A00, 0x5C600, };
-            int[] length = (oras) 
-                ? new [] { 0x000002C8, 0x00000B90, 0x0000002C, 0x00000038, 0x00000150, 0x00000004, 0x00000008, 0x000001C0, 0x000000BE, 0x00000024, 0x00002100, 0x00000130, 0x00000440, 0x00000574, 0x00004E28, 0x00004E28, 0x00004E28, 0x00000170, 0x0000061C, 0x00000504, 0x000011CC, 0x00000644, 0x00000104, 0x00000004, 0x00000420, 0x00000064, 0x000003F0, 0x0000070C, 0x00000180, 0x00000004, 0x0000000C, 0x00000048, 0x00000054, 0x00000644, 0x000005C8, 0x000002F8, 0x00001B40, 0x000001F4, 0x000003E0, 0x00000216, 0x00000640, 0x00001A90, 0x00000400, 0x00000618, 0x0000025C, 0x00000834, 0x00000318, 0x000007D0, 0x00000C48, 0x00000078, 0x00000200, 0x00000C84, 0x00000628, 0x00000400, 0x00007AD0, 0x000078B0, 0x00034AD0, 0x0000E058, }
-                : new [] { 0x000002C8, 0x00000B88, 0x0000002C, 0x00000038, 0x00000150, 0x00000004, 0x00000008, 0x000001C0, 0x000000BE, 0x00000024, 0x00002100, 0x00000140, 0x00000440, 0x00000574, 0x00004E28, 0x00004E28, 0x00004E28, 0x00000170, 0x0000061C, 0x00000504, 0x000006A0, 0x00000644, 0x00000104, 0x00000004, 0x00000420, 0x00000064, 0x000003F0, 0x0000070C, 0x00000180, 0x00000004, 0x0000000C, 0x00000048, 0x00000054, 0x00000644, 0x000005C8, 0x000002F8, 0x00001B40, 0x000001F4, 0x000001F0, 0x00000216, 0x00000390, 0x00001A90, 0x00000308, 0x00000618, 0x0000025C, 0x00000834, 0x00000318, 0x000007D0, 0x00000C48, 0x00000078, 0x00000200, 0x00000C84, 0x00000628, 0x00034AD0, 0x0000E058, };
-            int csoff = oras ? 0x7B21A : 0x6A81A;
-            if (savegame == 1) // Offset by 0x7F000
+            // Dynamic handling of checksums regardless of save size.
+
+            int verificationOffset = savefile.Length - 0x200 + 0x10;
+            if (BitConverter.ToUInt32(savefile, verificationOffset) != 0x42454546)
+                verificationOffset -= 0x200; // No savegames have more than 0x3D blocks, maybe in the future?
+
+            int count = (savefile.Length - verificationOffset - 0x8) / 8;
+            verificationOffset += 4;
+            int[] Lengths = new int[count];
+            ushort[] BlockIDs = new ushort[count];
+            ushort[] Checksums = new ushort[count];
+            int[] Start = new int[count];
+            int CurrentPosition = 0;
+            for (int i = 0; i < count; i++)
             {
-                start = Array.ConvertAll(start, x => x + 0x7F000);
-                csoff += 0x7F000;
+                Start[i] = CurrentPosition;
+                Lengths[i] = BitConverter.ToInt32(savefile, verificationOffset + 0 + 8 * i);
+                BlockIDs[i] = BitConverter.ToUInt16(savefile, verificationOffset + 4 + 8 * i);
+                Checksums[i] = BitConverter.ToUInt16(savefile, verificationOffset + 6 + 8 * i);
+
+                CurrentPosition += (Lengths[i] % 0x200 == 0) ? Lengths[i] : (0x200 - Lengths[i] % 0x200 + Lengths[i]);
+
+                if ((BlockIDs[i] != 0) || i == 0) continue;
+                count = i;
+                break;
             }
-            // Calculate checksums and spit out result.
-            for (int i = 0; i < length.Length; i++)
+            // Apply checksums
+            for (int i = 0; i < count; i++)
             {
-                byte[] array = savefile.Skip(start[i]).Take(length[i]).ToArray();
-                ushort checksum = ccitt16(array);
-                ushort actualsum = BitConverter.ToUInt16(savefile, csoff + i*0x8);
-                if (checksum == actualsum) continue;
+                ushort chk = ccitt16(savefile.Skip(Start[i]).Take(Lengths[i]).ToArray());
+                ushort old = BitConverter.ToUInt16(savefile, verificationOffset + 6 + i * 8);
+
+                if (chk == old) continue;
 
                 invalid++;
-                rv += String.Format("Invalid: {0} @ Region {1}", i.ToString("X2"), start[i].ToString("X5") + Environment.NewLine);
+                rv += String.Format("Invalid: {0} @ Region {1}", i.ToString("X2"), Start[i].ToString("X5") + Environment.NewLine);
             }
             // Return Outputs
-            rv += String.Format("SAV{2}: {0}/{1}", (start.Length - invalid), start.Length + Environment.NewLine, savegame + 1);
-            ctr[0] += invalid;
-            ctr[1] += length.Length - 1;
+            rv += String.Format("SAV: {0}/{1}", (count - invalid), count + Environment.NewLine);
             return rv;
         }
-        internal static string verifyG6SHA(byte[] savefile, bool oras)
+        internal static void writeG6CHK(byte[] savefile)
         {
-            string rv = "";
-            int invalid1 = 0;
-            // Verify Hashes
-            #region hash table data
-            uint[] hashtabledata = {
-                                    0x2020,	    0x203F,	    0x2000,	0x200,
-                                    0x2040,	    0x2FFF,	    0x2020,	0x1000,
-                                    0x3000,	    0x3FFF,	    0x2040,	0x1000,
-                                    0x4000,	    0x4FFF,	    0x2060,	0x1000,
-                                    0x5000,	    0x5FFF,	    0x2080,	0x1000,
-                                    0x6000,	    0x6FFF,	    0x20A0,	0x1000,
-                                    0x7000,	    0x7FFF,	    0x20C0,	0x1000,
-                                    0x8000,	    0x8FFF,	    0x20E0,	0x1000,
-                                    0x9000,	    0x9FFF,	    0x2100,	0x1000,
-                                    0xA000,	    0xAFFF,	    0x2120,	0x1000,
-                                    0xB000,	    0xBFFF,	    0x2140,	0x1000,
-                                    0xC000,	    0xCFFF,	    0x2160,	0x1000,
-                                    0xD000,	    0xDFFF,	    0x2180,	0x1000,
-                                    0xE000,	    0xEFFF,	    0x21A0,	0x1000,
-                                    0xF000,	    0xFFFF,	    0x21C0,	0x1000,
-                                    0x10000,	0x10FFF,	0x21E0,	0x1000,
-                                    0x11000,	0x11FFF,	0x2200,	0x1000,
-                                    0x12000,	0x12FFF,	0x2220,	0x1000,
-                                    0x13000,	0x13FFF,	0x2240,	0x1000,
-                                    0x14000,	0x14FFF,	0x2260,	0x1000,
-                                    0x15000,	0x15FFF,	0x2280,	0x1000,
-                                    0x16000,	0x16FFF,	0x22A0,	0x1000,
-                                    0x17000,	0x17FFF,	0x22C0,	0x1000,
-                                    0x18000,	0x18FFF,	0x22E0,	0x1000,
-                                    0x19000,	0x19FFF,	0x2300,	0x1000,
-                                    0x1A000,	0x1AFFF,	0x2320,	0x1000,
-                                    0x1B000,	0x1BFFF,	0x2340,	0x1000,
-                                    0x1C000,	0x1CFFF,	0x2360,	0x1000,
-                                    0x1D000,	0x1DFFF,	0x2380,	0x1000,
-                                    0x1E000,	0x1EFFF,	0x23A0,	0x1000,
-                                    0x1F000,	0x1FFFF,	0x23C0,	0x1000,
-                                    0x20000,	0x20FFF,	0x23E0,	0x1000,
-                                    0x21000,	0x21FFF,	0x2400,	0x1000,
-                                    0x22000,	0x22FFF,	0x2420,	0x1000,
-                                    0x23000,	0x23FFF,	0x2440,	0x1000,
-                                    0x24000,	0x24FFF,	0x2460,	0x1000,
-                                    0x25000,	0x25FFF,	0x2480,	0x1000,
-                                    0x26000,	0x26FFF,	0x24A0,	0x1000,
-                                    0x27000,	0x27FFF,	0x24C0,	0x1000,
-                                    0x28000,	0x28FFF,	0x24E0,	0x1000,
-                                    0x29000,	0x29FFF,	0x2500,	0x1000,
-                                    0x2A000,	0x2AFFF,	0x2520,	0x1000,
-                                    0x2B000,	0x2BFFF,	0x2540,	0x1000,
-                                    0x2C000,	0x2CFFF,	0x2560,	0x1000,
-                                    0x2D000,	0x2DFFF,	0x2580,	0x1000,
-                                    0x2E000,	0x2EFFF,	0x25A0,	0x1000,
-                                    0x2F000,	0x2FFFF,	0x25C0,	0x1000,
-                                    0x30000,	0x30FFF,	0x25E0,	0x1000,
-                                    0x31000,	0x31FFF,	0x2600,	0x1000,
-                                    0x32000,	0x32FFF,	0x2620,	0x1000,
-                                    0x33000,	0x33FFF,	0x2640,	0x1000,
-                                    0x34000,	0x34FFF,	0x2660,	0x1000,
-                                    0x35000,	0x35FFF,	0x2680,	0x1000,
-                                    0x36000,	0x36FFF,	0x26A0,	0x1000,
-                                    0x37000,	0x37FFF,	0x26C0,	0x1000,
-                                    0x38000,	0x38FFF,	0x26E0,	0x1000,
-                                    0x39000,	0x39FFF,	0x2700,	0x1000,
-                                    0x3A000,	0x3AFFF,	0x2720,	0x1000,
-                                    0x3B000,	0x3BFFF,	0x2740,	0x1000,
-                                    0x3C000,	0x3CFFF,	0x2760,	0x1000,
-                                    0x3D000,	0x3DFFF,	0x2780,	0x1000,
-                                    0x3E000,	0x3EFFF,	0x27A0,	0x1000,
-                                    0x3F000,	0x3FFFF,	0x27C0,	0x1000,
-                                    0x40000,	0x40FFF,	0x27E0,	0x1000,
-                                    0x41000,	0x41FFF,	0x2800,	0x1000,
-                                    0x42000,	0x42FFF,	0x2820,	0x1000,
-                                    0x43000,	0x43FFF,	0x2840,	0x1000,
-                                    0x44000,	0x44FFF,	0x2860,	0x1000,
-                                    0x45000,	0x45FFF,	0x2880,	0x1000,
-                                    0x46000,	0x46FFF,	0x28A0,	0x1000,
-                                    0x47000,	0x47FFF,	0x28C0,	0x1000,
-                                    0x48000,	0x48FFF,	0x28E0,	0x1000,
-                                    0x49000,	0x49FFF,	0x2900,	0x1000,
-                                    0x4A000,	0x4AFFF,	0x2920,	0x1000,
-                                    0x4B000,	0x4BFFF,	0x2940,	0x1000,
-                                    0x4C000,	0x4CFFF,	0x2960,	0x1000,
-                                    0x4D000,	0x4DFFF,	0x2980,	0x1000,
-                                    0x4E000,	0x4EFFF,	0x29A0,	0x1000,
-                                    0x4F000,	0x4FFFF,	0x29C0,	0x1000,
-                                    0x50000,	0x50FFF,	0x29E0,	0x1000,
-                                    0x51000,	0x51FFF,	0x2A00,	0x1000,
-                                    0x52000,	0x52FFF,	0x2A20,	0x1000,
-                                    0x53000,	0x53FFF,	0x2A40,	0x1000,
-                                    0x54000,	0x54FFF,	0x2A60,	0x1000,
-                                    0x55000,	0x55FFF,	0x2A80,	0x1000,
-                                    0x56000,	0x56FFF,	0x2AA0,	0x1000,
-                                    0x57000,	0x57FFF,	0x2AC0,	0x1000,
-                                    0x58000,	0x58FFF,	0x2AE0,	0x1000,
-                                    0x59000,	0x59FFF,	0x2B00,	0x1000,
-                                    0x5A000,	0x5AFFF,	0x2B20,	0x1000,
-                                    0x5B000,	0x5BFFF,	0x2B40,	0x1000,
-                                    0x5C000,	0x5CFFF,	0x2B60,	0x1000,
-                                    0x5D000,	0x5DFFF,	0x2B80,	0x1000,
-                                    0x5E000,	0x5EFFF,	0x2BA0,	0x1000,
-                                    0x5F000,	0x5FFFF,	0x2BC0,	0x1000,
-                                    0x60000,	0x60FFF,	0x2BE0,	0x1000,
-                                    0x61000,	0x61FFF,	0x2C00,	0x1000,
-                                    0x62000,	0x62FFF,	0x2C20,	0x1000,
-                                    0x63000,	0x63FFF,	0x2C40,	0x1000,
-                                    0x64000,	0x64FFF,	0x2C60,	0x1000,
-                                    0x65000,	0x65FFF,	0x2C80,	0x1000,
-                                    0x66000,	0x66FFF,	0x2CA0,	0x1000,
-                                    0x67000,	0x67FFF,	0x2CC0,	0x1000,
-                                    0x68000,	0x68FFF,	0x2CE0,	0x1000,
-                                    0x69000,	0x69FFF,	0x2D00,	0x1000,
-                                    0x6A000,	0x6AFFF,	0x2D20,	0x1000,
-                                 };
-            #endregion
-            SHA256 mySHA256 = SHA256.Create();
+            // Dynamic handling of checksums regardless of save size.
 
-            for (int i = 0; i < hashtabledata.Length / 4; i++)
+            int verificationOffset = savefile.Length - 0x200 + 0x10;
+            if (BitConverter.ToUInt32(savefile, verificationOffset) != 0x42454546)
+                verificationOffset -= 0x200; // No savegames have more than 0x3D blocks, maybe in the future?
+
+            int count = (savefile.Length - verificationOffset - 0x8) / 8;
+            verificationOffset += 4;
+            int[] Lengths = new int[count];
+            ushort[] BlockIDs = new ushort[count];
+            ushort[] Checksums = new ushort[count];
+            int[] Start = new int[count];
+            int CurrentPosition = 0;
+            for (int i = 0; i < count; i++)
             {
-                uint start = hashtabledata[0 + 4 * i];
-                uint length = hashtabledata[1 + 4 * i] - hashtabledata[0 + 4 * i];
-                uint offset = hashtabledata[2 + 4 * i];
-                uint blocksize = hashtabledata[3 + 4 * i];
+                Start[i] = CurrentPosition;
+                Lengths[i] = BitConverter.ToInt32(savefile, verificationOffset + 0 + 8 * i);
+                BlockIDs[i] = BitConverter.ToUInt16(savefile, verificationOffset + 4 + 8 * i);
+                Checksums[i] = BitConverter.ToUInt16(savefile, verificationOffset + 6 + 8 * i);
 
-                byte[] zeroarray = new byte[blocksize];
-                Array.Copy(savefile, start, zeroarray, 0, length + 1);
-                byte[] hashValue = mySHA256.ComputeHash(zeroarray);
-                byte[] actualhash = new byte[0x20];
-                Array.Copy(savefile, offset, actualhash, 0, 0x20);
+                CurrentPosition += (Lengths[i]%0x200 == 0) ? Lengths[i] : (0x200 - Lengths[i]%0x200 + Lengths[i]);
 
-                if (hashValue.SequenceEqual(actualhash)) continue;
-                invalid1++;
-                rv += "Invalid: " + hashtabledata[2 + 4 * i].ToString("X5") + " @ " + hashtabledata[0 + 4 * i].ToString("X5") + "-" + hashtabledata[1 + 4 * i].ToString("X5") + Environment.NewLine;
+                if ((BlockIDs[i] != 0) || i == 0) continue;
+                count = i;
+                break;
             }
-            rv += "1st SAV: " + (106 - invalid1) + "/" + 106 + Environment.NewLine;
-
-            // Check The Second Half of Hashes
-            int invalid2 = 0;
-            for (int i = 0; i < hashtabledata.Length; i += 4)
+            // Apply checksums
+            for (int i = 0; i < count; i++)
             {
-                hashtabledata[i + 0] += 0x7F000;
-                hashtabledata[i + 1] += 0x7F000;
-                hashtabledata[i + 2] += 0x7F000;
+                byte[] array = savefile.Skip(Start[i]).Take(Lengths[i]).ToArray();
+                Array.Copy(BitConverter.GetBytes(ccitt16(array)), 0, savefile, verificationOffset + 6 + i * 8, 2);
             }
-            // Problem with save2 saves is that 0x3000-0x4FFF doesn't use save2 data. Probably different when hashed, but different when stored.
-            for (int i = 2; i < 4; i++)
-            {
-                hashtabledata[i * 4 + 0] -= 0x7F000;
-                hashtabledata[i * 4 + 1] -= 0x7F000;
-            }
-
-            for (int i = 0; i < hashtabledata.Length / 4; i++)
-            {
-                uint start = hashtabledata[0 + 4 * i];
-                uint length = hashtabledata[1 + 4 * i] - hashtabledata[0 + 4 * i];
-                uint offset = hashtabledata[2 + 4 * i];
-                uint blocksize = hashtabledata[3 + 4 * i];
-
-                byte[] zeroarray = new byte[blocksize];
-                Array.Copy(savefile, start, zeroarray, 0, length + 1);
-                byte[] hashValue = mySHA256.ComputeHash(zeroarray);
-                byte[] actualhash = new byte[0x20];
-                Array.Copy(savefile, offset, actualhash, 0, 0x20);
-
-                if (hashValue.SequenceEqual(actualhash)) continue;
-                invalid2++;
-                rv += "Invalid: " + hashtabledata[2 + 4 * i].ToString("X5") + " @ " + hashtabledata[0 + 4 * i].ToString("X5") + "-" + hashtabledata[1 + 4 * i].ToString("X5") + Environment.NewLine;
-            }
-            rv += "2nd SAV: " + (106 - invalid2) + "/" + 106 + Environment.NewLine;
-
-            if (invalid1 + invalid2 == (2 * 106))
-                rv = "None of the IVFC hashes are valid." + Environment.NewLine;
-
-            // Check the Upper Level IVFC Hashes
-            {
-                byte[] zeroarray = new byte[0x200];
-                Array.Copy(savefile, 0x2000, zeroarray, 0, 0x20);
-                byte[] hashValue = mySHA256.ComputeHash(zeroarray);
-                byte[] actualhash = new byte[0x20];
-                Array.Copy(savefile, 0x43C, actualhash, 0, 0x20);
-                if (!hashValue.SequenceEqual(actualhash))
-                    rv += "Invalid: " + 0x2000.ToString("X5") + " @ " + 0x43C.ToString("X3") + Environment.NewLine;
-            }
-            {
-                byte[] zeroarray = new byte[0x200];
-                Array.Copy(savefile, 0x81000, zeroarray, 0, 0x20);
-                byte[] hashValue = mySHA256.ComputeHash(zeroarray);
-                byte[] actualhash = new byte[0x20];
-                Array.Copy(savefile, 0x30C, actualhash, 0, 0x20);
-                if (!hashValue.SequenceEqual(actualhash))
-                    rv += "Invalid: " + 0x81000.ToString("X5") + " @ " + 0x30C.ToString("X3") + Environment.NewLine;
-            }
-            {
-                byte[] difihash1 = new byte[0x12C];
-                byte[] difihash2 = new byte[0x12C];
-                Array.Copy(savefile, 0x330, difihash1, 0, 0x12C);
-                Array.Copy(savefile, 0x200, difihash2, 0, 0x12C);
-                byte[] hashValue1 = mySHA256.ComputeHash(difihash1);
-                byte[] hashValue2 = mySHA256.ComputeHash(difihash2);
-                byte[] actualhash = new byte[0x20];
-                Array.Copy(savefile, 0x16C, actualhash, 0, 0x20);
-                if (hashValue1.SequenceEqual(actualhash))
-                    rv += "Active DIFI partition is Save 1.";
-                else if (hashValue2.SequenceEqual(actualhash))
-                    rv += "Active DIFI partition is Save 2.";
-                else
-                    rv += "ERROR: NO ACTIVE DIFI HASH MATCH";
-            }
-            return rv;
-        }
-        internal static byte[] writeG6CHK(byte[] savefile, bool oras, int savegame)
-        {
-            // Prepare Region Loops
-            int[] start = (oras)
-                ? new[] { 0x05400, 0x05800, 0x06400, 0x06600, 0x06800, 0x06A00, 0x06C00, 0x06E00, 0x07000, 0x07200, 0x07400, 0x09600, 0x09800, 0x09E00, 0x0A400, 0x0F400, 0x14400, 0x19400, 0x19600, 0x19E00, 0x1A400, 0x1B600, 0x1BE00, 0x1C000, 0x1C200, 0x1C800, 0x1CA00, 0x1CE00, 0x1D600, 0x1D800, 0x1DA00, 0x1DC00, 0x1DE00, 0x1E000, 0x1E800, 0x1EE00, 0x1F200, 0x20E00, 0x21000, 0x21400, 0x21800, 0x22000, 0x23C00, 0x24000, 0x24800, 0x24C00, 0x25600, 0x25A00, 0x26200, 0x27000, 0x27200, 0x27400, 0x28200, 0x28A00, 0x28E00, 0x30A00, 0x38400, 0x6D000, }
-                : new[] { 0x05400, 0x05800, 0x06400, 0x06600, 0x06800, 0x06A00, 0x06C00, 0x06E00, 0x07000, 0x07200, 0x07400, 0x09600, 0x09800, 0x09E00, 0x0A400, 0x0F400, 0x14400, 0x19400, 0x19600, 0x19E00, 0x1A400, 0x1AC00, 0x1B400, 0x1B600, 0x1B800, 0x1BE00, 0x1C000, 0x1C400, 0x1CC00, 0x1CE00, 0x1D000, 0x1D200, 0x1D400, 0x1D600, 0x1DE00, 0x1E400, 0x1E800, 0x20400, 0x20600, 0x20800, 0x20C00, 0x21000, 0x22C00, 0x23000, 0x23800, 0x23C00, 0x24600, 0x24A00, 0x25200, 0x26000, 0x26200, 0x26400, 0x27200, 0x27A00, 0x5C600, };
-            int[] length = (oras)
-                ? new[] { 0x000002C8, 0x00000B90, 0x0000002C, 0x00000038, 0x00000150, 0x00000004, 0x00000008, 0x000001C0, 0x000000BE, 0x00000024, 0x00002100, 0x00000130, 0x00000440, 0x00000574, 0x00004E28, 0x00004E28, 0x00004E28, 0x00000170, 0x0000061C, 0x00000504, 0x000011CC, 0x00000644, 0x00000104, 0x00000004, 0x00000420, 0x00000064, 0x000003F0, 0x0000070C, 0x00000180, 0x00000004, 0x0000000C, 0x00000048, 0x00000054, 0x00000644, 0x000005C8, 0x000002F8, 0x00001B40, 0x000001F4, 0x000003E0, 0x00000216, 0x00000640, 0x00001A90, 0x00000400, 0x00000618, 0x0000025C, 0x00000834, 0x00000318, 0x000007D0, 0x00000C48, 0x00000078, 0x00000200, 0x00000C84, 0x00000628, 0x00000400, 0x00007AD0, 0x000078B0, 0x00034AD0, 0x0000E058, }
-                : new[] { 0x000002C8, 0x00000B88, 0x0000002C, 0x00000038, 0x00000150, 0x00000004, 0x00000008, 0x000001C0, 0x000000BE, 0x00000024, 0x00002100, 0x00000140, 0x00000440, 0x00000574, 0x00004E28, 0x00004E28, 0x00004E28, 0x00000170, 0x0000061C, 0x00000504, 0x000006A0, 0x00000644, 0x00000104, 0x00000004, 0x00000420, 0x00000064, 0x000003F0, 0x0000070C, 0x00000180, 0x00000004, 0x0000000C, 0x00000048, 0x00000054, 0x00000644, 0x000005C8, 0x000002F8, 0x00001B40, 0x000001F4, 0x000001F0, 0x00000216, 0x00000390, 0x00001A90, 0x00000308, 0x00000618, 0x0000025C, 0x00000834, 0x00000318, 0x000007D0, 0x00000C48, 0x00000078, 0x00000200, 0x00000C84, 0x00000628, 0x00034AD0, 0x0000E058, };
-            int csoff = oras ? 0x7B21A : 0x6A81A;
-            if (savegame == 1) // Offset by 0x7F000
-            {
-                start = Array.ConvertAll(start, x => x + 0x7F000);
-                csoff += 0x7F000;
-            }
-            // Calculate checksums and write back to save file.
-            for (int i = 0; i < length.Length; i++)
-            {
-                byte[] array = savefile.Skip(start[i]).Take(length[i]).ToArray();
-                Array.Copy(BitConverter.GetBytes(ccitt16(array)), 0, savefile, csoff + i * 8, 2);
-            }
-            return savefile;
-        }
-        internal static byte[] writeG6SHA(byte[] savefile, bool oras, int savegame)
-        {
-            #region hash table data
-            uint[] hashtabledata = {
-                                    0x2020,	    0x203F,	    0x2000,	0x200,
-                                    0x2040,	    0x2FFF,	    0x2020,	0x1000,
-                                    0x3000,	    0x3FFF,	    0x2040,	0x1000,
-                                    0x4000,	    0x4FFF,	    0x2060,	0x1000,
-                                    0x5000,	    0x5FFF,	    0x2080,	0x1000,
-                                    0x6000,	    0x6FFF,	    0x20A0,	0x1000,
-                                    0x7000,	    0x7FFF,	    0x20C0,	0x1000,
-                                    0x8000,	    0x8FFF,	    0x20E0,	0x1000,
-                                    0x9000,	    0x9FFF,	    0x2100,	0x1000,
-                                    0xA000,	    0xAFFF,	    0x2120,	0x1000,
-                                    0xB000,	    0xBFFF,	    0x2140,	0x1000,
-                                    0xC000,	    0xCFFF,	    0x2160,	0x1000,
-                                    0xD000,	    0xDFFF,	    0x2180,	0x1000,
-                                    0xE000,	    0xEFFF,	    0x21A0,	0x1000,
-                                    0xF000,	    0xFFFF,	    0x21C0,	0x1000,
-                                    0x10000,	0x10FFF,	0x21E0,	0x1000,
-                                    0x11000,	0x11FFF,	0x2200,	0x1000,
-                                    0x12000,	0x12FFF,	0x2220,	0x1000,
-                                    0x13000,	0x13FFF,	0x2240,	0x1000,
-                                    0x14000,	0x14FFF,	0x2260,	0x1000,
-                                    0x15000,	0x15FFF,	0x2280,	0x1000,
-                                    0x16000,	0x16FFF,	0x22A0,	0x1000,
-                                    0x17000,	0x17FFF,	0x22C0,	0x1000,
-                                    0x18000,	0x18FFF,	0x22E0,	0x1000,
-                                    0x19000,	0x19FFF,	0x2300,	0x1000,
-                                    0x1A000,	0x1AFFF,	0x2320,	0x1000,
-                                    0x1B000,	0x1BFFF,	0x2340,	0x1000,
-                                    0x1C000,	0x1CFFF,	0x2360,	0x1000,
-                                    0x1D000,	0x1DFFF,	0x2380,	0x1000,
-                                    0x1E000,	0x1EFFF,	0x23A0,	0x1000,
-                                    0x1F000,	0x1FFFF,	0x23C0,	0x1000,
-                                    0x20000,	0x20FFF,	0x23E0,	0x1000,
-                                    0x21000,	0x21FFF,	0x2400,	0x1000,
-                                    0x22000,	0x22FFF,	0x2420,	0x1000,
-                                    0x23000,	0x23FFF,	0x2440,	0x1000,
-                                    0x24000,	0x24FFF,	0x2460,	0x1000,
-                                    0x25000,	0x25FFF,	0x2480,	0x1000,
-                                    0x26000,	0x26FFF,	0x24A0,	0x1000,
-                                    0x27000,	0x27FFF,	0x24C0,	0x1000,
-                                    0x28000,	0x28FFF,	0x24E0,	0x1000,
-                                    0x29000,	0x29FFF,	0x2500,	0x1000,
-                                    0x2A000,	0x2AFFF,	0x2520,	0x1000,
-                                    0x2B000,	0x2BFFF,	0x2540,	0x1000,
-                                    0x2C000,	0x2CFFF,	0x2560,	0x1000,
-                                    0x2D000,	0x2DFFF,	0x2580,	0x1000,
-                                    0x2E000,	0x2EFFF,	0x25A0,	0x1000,
-                                    0x2F000,	0x2FFFF,	0x25C0,	0x1000,
-                                    0x30000,	0x30FFF,	0x25E0,	0x1000,
-                                    0x31000,	0x31FFF,	0x2600,	0x1000,
-                                    0x32000,	0x32FFF,	0x2620,	0x1000,
-                                    0x33000,	0x33FFF,	0x2640,	0x1000,
-                                    0x34000,	0x34FFF,	0x2660,	0x1000,
-                                    0x35000,	0x35FFF,	0x2680,	0x1000,
-                                    0x36000,	0x36FFF,	0x26A0,	0x1000,
-                                    0x37000,	0x37FFF,	0x26C0,	0x1000,
-                                    0x38000,	0x38FFF,	0x26E0,	0x1000,
-                                    0x39000,	0x39FFF,	0x2700,	0x1000,
-                                    0x3A000,	0x3AFFF,	0x2720,	0x1000,
-                                    0x3B000,	0x3BFFF,	0x2740,	0x1000,
-                                    0x3C000,	0x3CFFF,	0x2760,	0x1000,
-                                    0x3D000,	0x3DFFF,	0x2780,	0x1000,
-                                    0x3E000,	0x3EFFF,	0x27A0,	0x1000,
-                                    0x3F000,	0x3FFFF,	0x27C0,	0x1000,
-                                    0x40000,	0x40FFF,	0x27E0,	0x1000,
-                                    0x41000,	0x41FFF,	0x2800,	0x1000,
-                                    0x42000,	0x42FFF,	0x2820,	0x1000,
-                                    0x43000,	0x43FFF,	0x2840,	0x1000,
-                                    0x44000,	0x44FFF,	0x2860,	0x1000,
-                                    0x45000,	0x45FFF,	0x2880,	0x1000,
-                                    0x46000,	0x46FFF,	0x28A0,	0x1000,
-                                    0x47000,	0x47FFF,	0x28C0,	0x1000,
-                                    0x48000,	0x48FFF,	0x28E0,	0x1000,
-                                    0x49000,	0x49FFF,	0x2900,	0x1000,
-                                    0x4A000,	0x4AFFF,	0x2920,	0x1000,
-                                    0x4B000,	0x4BFFF,	0x2940,	0x1000,
-                                    0x4C000,	0x4CFFF,	0x2960,	0x1000,
-                                    0x4D000,	0x4DFFF,	0x2980,	0x1000,
-                                    0x4E000,	0x4EFFF,	0x29A0,	0x1000,
-                                    0x4F000,	0x4FFFF,	0x29C0,	0x1000,
-                                    0x50000,	0x50FFF,	0x29E0,	0x1000,
-                                    0x51000,	0x51FFF,	0x2A00,	0x1000,
-                                    0x52000,	0x52FFF,	0x2A20,	0x1000,
-                                    0x53000,	0x53FFF,	0x2A40,	0x1000,
-                                    0x54000,	0x54FFF,	0x2A60,	0x1000,
-                                    0x55000,	0x55FFF,	0x2A80,	0x1000,
-                                    0x56000,	0x56FFF,	0x2AA0,	0x1000,
-                                    0x57000,	0x57FFF,	0x2AC0,	0x1000,
-                                    0x58000,	0x58FFF,	0x2AE0,	0x1000,
-                                    0x59000,	0x59FFF,	0x2B00,	0x1000,
-                                    0x5A000,	0x5AFFF,	0x2B20,	0x1000,
-                                    0x5B000,	0x5BFFF,	0x2B40,	0x1000,
-                                    0x5C000,	0x5CFFF,	0x2B60,	0x1000,
-                                    0x5D000,	0x5DFFF,	0x2B80,	0x1000,
-                                    0x5E000,	0x5EFFF,	0x2BA0,	0x1000,
-                                    0x5F000,	0x5FFFF,	0x2BC0,	0x1000,
-                                    0x60000,	0x60FFF,	0x2BE0,	0x1000,
-                                    0x61000,	0x61FFF,	0x2C00,	0x1000,
-                                    0x62000,	0x62FFF,	0x2C20,	0x1000,
-                                    0x63000,	0x63FFF,	0x2C40,	0x1000,
-                                    0x64000,	0x64FFF,	0x2C60,	0x1000,
-                                    0x65000,	0x65FFF,	0x2C80,	0x1000,
-                                    0x66000,	0x66FFF,	0x2CA0,	0x1000,
-                                    0x67000,	0x67FFF,	0x2CC0,	0x1000,
-                                    0x68000,	0x68FFF,	0x2CE0,	0x1000,
-                                    0x69000,	0x69FFF,	0x2D00,	0x1000,
-                                    0x6A000,	0x6AFFF,	0x2D20,	0x1000,
-                                 };
-            if (savegame == 1)
-            {
-                for (int i = 0; i < hashtabledata.Length / 4; i++)
-                {
-                    hashtabledata[i * 4 + 0] += 0x7F000;
-                    hashtabledata[i * 4 + 1] += 0x7F000;
-                    hashtabledata[i * 4 + 2] += 0x7F000;
-                }
-
-                // Problem with save2 saves is that 0x3000-0x4FFF doesn't use save2 data. Probably different when hashed, but different when stored.
-                for (int i = 2; i < 4; i++)
-                {
-                    hashtabledata[i * 4 + 0] -= 0x7F000;
-                    hashtabledata[i * 4 + 1] -= 0x7F000;
-                }
-            }
-            #endregion
-            SHA256 mySHA256 = SHA256.Create();
-
-            // Hash for 0x3000 onwards
-            for (int i = 2; i < hashtabledata.Length / 4; i++)
-            {
-                uint start = hashtabledata[0 + 4 * i];
-                uint length = hashtabledata[1 + 4 * i] - hashtabledata[0 + 4 * i];
-                uint offset = hashtabledata[2 + 4 * i];
-                uint blocksize = hashtabledata[3 + 4 * i];
-
-                byte[] zeroarray = new byte[blocksize];
-                Array.Copy(savefile, start, zeroarray, 0, length + 1);
-                byte[] hashValue = mySHA256.ComputeHash(zeroarray);
-                Array.Copy(hashValue, 0, savefile, offset, 0x20);
-            }
-            // Fix 2nd Hash
-            {
-                uint start = hashtabledata[0 + 4 * 1];
-                uint length = hashtabledata[1 + 4 * 1] - hashtabledata[0 + 4 * 1];
-                uint offset = hashtabledata[2 + 4 * 1];
-                uint blocksize = hashtabledata[3 + 4 * 1];
-
-                byte[] zeroarray = new byte[blocksize];
-                Array.Copy(savefile, start, zeroarray, 0, length + 1);
-                byte[] hashValue = mySHA256.ComputeHash(zeroarray);
-
-                Array.Copy(hashValue, 0, savefile, offset, 0x20);
-            }
-            // Fix 1st Hash
-            {
-                uint start = hashtabledata[0 + 4 * 0];
-                uint length = hashtabledata[1 + 4 * 0] - hashtabledata[0 + 4 * 0];
-                uint offset = hashtabledata[2 + 4 * 0];
-                uint blocksize = hashtabledata[3 + 4 * 0];
-
-                byte[] zeroarray = new byte[blocksize];
-                Array.Copy(savefile, start, zeroarray, 0, length + 1);
-                byte[] hashValue = mySHA256.ComputeHash(zeroarray);
-
-                Array.Copy(hashValue, 0, savefile, offset, 0x20);
-            }
-            // Fix IVFC Hash
-            {
-                byte[] zeroarray = new byte[0x200];
-                Array.Copy(savefile, 0x2000 + savegame * 0x7F000, zeroarray, 0, 0x20);
-                byte[] hashValue = mySHA256.ComputeHash(zeroarray);
-
-                Array.Copy(hashValue, 0, savefile, 0x43C - savegame * 0x130, 0x20);
-            }
-            // Fix DISA Hash
-            {
-                byte[] difihash = new byte[0x12C];
-                Array.Copy(savefile, 0x330 - savegame * 0x130, difihash, 0, 0x12C);
-                byte[] hashValue = mySHA256.ComputeHash(difihash);
-
-                Array.Copy(hashValue, 0, savefile, 0x16C, 0x20);
-            }
-            return savefile;
         }
 
         // Data Requests
-        internal static Image getSprite(byte[] data)
-        {
-            int species = BitConverter.ToInt16(data, 0x08); // Get Species
-            int form = (data[0x1D] >> 3);
-            int gender = (data[0x1D] >> 1) & 0x3;
-            int item = BitConverter.ToUInt16(data, 0xA);
-            bool isEgg = ((BitConverter.ToUInt32(data, 0x74) >> 30) & 1) == 1;
-            bool isShiny = getIsShiny(BitConverter.ToUInt32(data, 0x18),
-                BitConverter.ToUInt16(data, 0x0C),
-                BitConverter.ToUInt16(data, 0x0E));
-
-            return getSprite(species, form, gender, item, isEgg, isShiny);
-        }
         internal static Image getSprite(int species, int form, int gender, int item, bool isegg, bool shiny)
         {
             string file;
@@ -1624,7 +843,25 @@ namespace PKHeX
             }
             return baseImage;
         }
+        internal static Image getSprite(PK6 pk6)
+        {
+            return getSprite(pk6.Species, pk6.AltForm, pk6.Gender, pk6.HeldItem, pk6.IsEgg, pk6.IsShiny);
+        }
+        internal static Image getSprite(byte[] data)
+        {
+            return new PK6(data).Sprite;
+        }
 
+        internal static string[] getShowdownText(PK6 pk6)
+        {
+            return getShowdownText(pk6.Nickname, pk6.Species, pk6.HeldItem, pk6.Ability, pk6.EVs, pk6.HPType, pk6.Move1, pk6.Move2, pk6.Move3, pk6.Move4);
+        }
+        internal static string[] getShowdownText(string Nickname, int Species, int HeldItem, int Ability, int[] EVs,
+            int HPType, int Move1, int Move2, int Move3, int Move4)
+        {
+            // TODO
+            return null;
+        }
 
         // Font Related
         [System.Runtime.InteropServices.DllImport("gdi32.dll")]
@@ -2091,6 +1328,8 @@ namespace PKHeX
                     string[] lines = input.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
                     for (int i = 0; i < lines.Length; i++) lines[i] = lines[i].Replace("'", "’").Trim(); // Sanitize apostrophes
 
+                    if (lines.Length < 3) return;
+
                     // Seek for start of set
                     int start = -1;
                     for (int i = 0; i < lines.Length; i++)
@@ -2135,8 +1374,7 @@ namespace PKHeX
                         }
                         if (Species < -1)
                             return;
-                        else
-                            lines = lines.Skip(1).Take(lines.Length - 1).ToArray();
+                        lines = lines.Skip(1).Take(lines.Length - 1).ToArray();
                     }
                     int movectr = 0;
                     // Detect relevant data
@@ -2163,6 +1401,7 @@ namespace PKHeX
                         string[] brokenline = line.Split(new[] { ": " }, StringSplitOptions.None);
                         switch (brokenline[0])
                         {
+                            case "Trait":
                             case "Ability": { Ability = Array.IndexOf(abilities, brokenline[1]); break; }
                             case "Level": { Level = Util.ToInt32(brokenline[1]); break; }
                             case "Shiny": { Shiny = (brokenline[1] == "Yes"); break; }

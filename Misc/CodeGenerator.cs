@@ -2,7 +2,6 @@
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace PKHeX
@@ -11,19 +10,15 @@ namespace PKHeX
     {
         byte[] codedata = new byte[232];
         byte[] newdata = new byte[232];
-        PKX.Structures.SaveGame SaveGame = new PKX.Structures.SaveGame(null);
 
-        Form1 m_parent;
         byte[] tabdata;
-        public CodeGenerator(Form1 frm1, byte[] formdata)
+        public CodeGenerator(byte[] formdata)
         {
-            m_parent = frm1;
             tabdata = formdata;
             InitializeComponent();
             CenterToParent();
             RTB_Code.Clear();
             TB_Write.Clear();
-            SaveGame = m_parent.SaveGame;
             CB_Box.Items.Clear();
             for (int i = 1; i <= 31; i++)
                 CB_Box.Items.Add(i.ToString());
@@ -49,8 +44,8 @@ namespace PKHeX
             else if (CB_Source.SelectedIndex == 1)
             {
                 newdata = new byte[0xE8];
-                Array.Copy(m_parent.savefile,
-                    SaveGame.Box                   // Box Offset
+                Array.Copy(Main.savefile,
+                    Main.SaveGame.Box                   // Box Offset
                         + CB_Box.SelectedIndex * (232 * 30) // Box Shift
                         + CB_Slot.SelectedIndex * 232,      // Slot Shift
                     newdata, 0, 0xE8);
@@ -65,9 +60,9 @@ namespace PKHeX
                 // Wondercard
                 newdata = new byte[0x108];
                 // Wondercard #
-                int wcn = CB_Slot.SelectedIndex;
+                int index = CB_Slot.SelectedIndex;
                 // copy from save, the chosen wondercard offset, to new data
-                Array.Copy(m_parent.savefile, SaveGame.Wondercard + wcn * 0x108 + 0x100, newdata, 0, 0x108);
+                Array.Copy(Main.savefile, Main.SaveGame.WondercardData + index * 0x108, newdata, 0, 0x108);
                 byte[] zerodata = new byte[0x108];
                 if (!newdata.SequenceEqual(zerodata)) return true;
 
@@ -75,52 +70,6 @@ namespace PKHeX
                 return false;
             }
             return true;
-        }
-        private void changeDataSource(object sender, EventArgs e)
-        {
-            int sourceindex = CB_Source.SelectedIndex;
-            B_Add.Enabled = true;
-
-            if (sourceindex == 0)
-            {
-                // Hide Box/Etc
-                CB_Box.Visible = false;
-                L_Box.Visible = false;
-                CB_Slot.Visible = false;
-                L_Slot.Visible = false;
-
-                TB_Write.Text = (0x27A00 - 0x5400).ToString("X8"); // Box 1, Slot 1
-            }
-            else if (sourceindex == 1)
-            {
-                CB_Box.Visible = L_Box.Visible = true;
-                CB_Slot.Visible = L_Slot.Visible = true;
-
-                L_Slot.Text = "Slot:";
-
-                CB_Slot.Items.Clear();
-                for (int i = 1; i <= 30; i++)
-                    CB_Slot.Items.Add(i.ToString());
-
-                CB_Slot.SelectedIndex = 0;
-
-                TB_Write.Text = (0x27A00 - 0x5400).ToString("X8"); // Box 1, Slot 1
-            }
-            else if (sourceindex == 2)
-            {
-                CB_Box.Visible = L_Box.Visible = false;
-                CB_Slot.Visible = L_Slot.Visible = true;
-
-                L_Slot.Text = "Card:";
-
-                // Set up cards
-                CB_Slot.Items.Clear();
-                for (int i = 1; i <= 24; i++)
-                    CB_Slot.Items.Add(i.ToString());
-
-                CB_Slot.SelectedIndex = 0;
-                TB_Write.Text = (0x22000 - 0x5400).ToString("X8"); // WC Slot 1
-            }
         }
         
         private void B_Add_Click(object sender, EventArgs e)
@@ -189,7 +138,7 @@ namespace PKHeX
             for (int i = 0; i < RTB_Code.Lines.Count()-1; i++)
             {
                 string line = RTB_Code.Lines[i];
-                string[] rip = Regex.Split(line, " ");
+                string[] rip = line.Split(new[] {" "}, StringSplitOptions.None);
 
                 // Write the 3 u32's to an array.
                 Array.Copy(BitConverter.GetBytes(UInt32.Parse(rip[0], NumberStyles.HexNumber)),0,ncf,4+i*12+0,4);
@@ -236,20 +185,11 @@ namespace PKHeX
         {
             string result = ""; 
             RTB_Code.Clear();
-            byte[] cybersav = m_parent.cyberSAV;
-            byte[] editedsav = m_parent.savefile;
-            byte[] newcyber = new byte[m_parent.cyberSAV.Length];
-            Array.Copy(editedsav, 0x5400, newcyber, 0, newcyber.Length);
+            byte[] cybersav = Main.originalSAV;
+            byte[] newcyber = Main.savefile;
 
-            int boxoffset = 0x22600;
-            if (m_parent.savegame_oras) boxoffset = 0x33000;
-
-            if (!m_parent.cybergadget)
-            {
-               Array.Copy(editedsav, m_parent.savindex * 0x7F000 + 0x5400,
-                          newcyber, 0, newcyber.Length);
-            }
-
+            int boxoffset = Main.SaveGame.Box;
+            
             int lines = 0;  // 65400
             for (int i = 0; i < newcyber.Length - 0x200; i += 4)
             {
@@ -376,7 +316,7 @@ namespace PKHeX
                 {
                     // Grab Line Data
                     string line = RTB_Code.Lines[i];
-                    string[] rip = Regex.Split(line, " ");
+                    string[] rip = line.Split(new[] { " " }, StringSplitOptions.None);
                     Array.Resize(ref data, data.Length + 4);
                     Array.Copy(BitConverter.GetBytes(UInt32.Parse(rip[1], NumberStyles.HexNumber)), 0, data, data.Length - 4, 4);
                 }

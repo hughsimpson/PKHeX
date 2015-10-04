@@ -1,6 +1,6 @@
 ﻿namespace PKHeX
 {
-    partial class Form1
+    partial class Main
     {
         /// <summary>
         /// Required designer variable.
@@ -29,7 +29,7 @@
         
         public void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Main));
             this.tabMain = new System.Windows.Forms.TabControl();
             this.Tab_Main = new System.Windows.Forms.TabPage();
             this.CB_Language = new System.Windows.Forms.ComboBox();
@@ -207,8 +207,6 @@
             this.Label_TID = new System.Windows.Forms.Label();
             this.Label_EncryptionConstant = new System.Windows.Forms.Label();
             this.Label_Diamond = new System.Windows.Forms.Label();
-            this.OpenPKX = new System.Windows.Forms.OpenFileDialog();
-            this.SavePKX = new System.Windows.Forms.SaveFileDialog();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.Menu_File = new System.Windows.Forms.ToolStripMenuItem();
             this.Menu_Open = new System.Windows.Forms.ToolStripMenuItem();
@@ -304,16 +302,14 @@
             this.subepkx2 = new System.Windows.Forms.PictureBox();
             this.subepkx3 = new System.Windows.Forms.PictureBox();
             this.Tab_Tools = new System.Windows.Forms.TabPage();
-            this.B_SaveBoxBin = new System.Windows.Forms.Button();
             this.B_3DSSETemp = new System.Windows.Forms.Button();
             this.B_JPEG = new System.Windows.Forms.Button();
             this.RTB_T = new System.Windows.Forms.RichTextBox();
             this.Tab_SAV = new System.Windows.Forms.TabPage();
+            this.B_SaveBoxBin = new System.Windows.Forms.Button();
             this.L_SAVManipulation = new System.Windows.Forms.Label();
-            this.B_SwitchSAV = new System.Windows.Forms.Button();
             this.B_VerifyCHK = new System.Windows.Forms.Button();
             this.L_IntegrityCheck = new System.Windows.Forms.Label();
-            this.B_VerifySHA = new System.Windows.Forms.Button();
             this.B_ExportSAV = new System.Windows.Forms.Button();
             this.RTB_S = new System.Windows.Forms.RichTextBox();
             this.B_OpenHallofFame = new System.Windows.Forms.Button();
@@ -329,7 +325,6 @@
             this.B_OpenPokedex = new System.Windows.Forms.Button();
             this.GB_SAVtools = new System.Windows.Forms.GroupBox();
             this.B_OpenSuperTraining = new System.Windows.Forms.Button();
-            this.L_SAVINDEX = new System.Windows.Forms.Label();
             this.dragout = new System.Windows.Forms.PictureBox();
             this.L_QR = new System.Windows.Forms.Label();
             this.tabMain.SuspendLayout();
@@ -538,7 +533,7 @@
             this.TB_PID.TabIndex = 1;
             this.TB_PID.Text = "12345678";
             this.TB_PID.TextChanged += new System.EventHandler(this.update_ID);
-            this.TB_PID.MouseHover += new System.EventHandler(this.getTSV);
+            this.TB_PID.MouseHover += new System.EventHandler(this.updateTSV);
             // 
             // CHK_Nicknamed
             // 
@@ -750,7 +745,7 @@
             this.CB_Nature.TabIndex = 9;
             this.CB_Nature.SelectedIndexChanged += new System.EventHandler(this.validateComboBox2);
             this.CB_Nature.KeyDown += new System.Windows.Forms.KeyEventHandler(this.removedropCB);
-            this.CB_Nature.MouseHover += new System.EventHandler(this.getNatureModification);
+            this.CB_Nature.MouseHover += new System.EventHandler(this.updateNatureModification);
             this.CB_Nature.Validating += new System.ComponentModel.CancelEventHandler(this.validateComboBox);
             // 
             // Label_3DSRegion
@@ -1419,6 +1414,7 @@
             this.TB_SPEIV.Size = new System.Drawing.Size(22, 20);
             this.TB_SPEIV.TabIndex = 6;
             this.TB_SPEIV.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.TB_SPEIV.Click += new System.EventHandler(this.clickIV);
             this.TB_SPEIV.TextChanged += new System.EventHandler(this.updateIVs);
             // 
             // TB_SPDIV
@@ -1430,6 +1426,7 @@
             this.TB_SPDIV.Size = new System.Drawing.Size(22, 20);
             this.TB_SPDIV.TabIndex = 5;
             this.TB_SPDIV.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.TB_SPDIV.Click += new System.EventHandler(this.clickIV);
             this.TB_SPDIV.TextChanged += new System.EventHandler(this.updateIVs);
             // 
             // TB_SPAIV
@@ -1441,6 +1438,7 @@
             this.TB_SPAIV.Size = new System.Drawing.Size(22, 20);
             this.TB_SPAIV.TabIndex = 4;
             this.TB_SPAIV.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.TB_SPAIV.Click += new System.EventHandler(this.clickIV);
             this.TB_SPAIV.TextChanged += new System.EventHandler(this.updateIVs);
             // 
             // TB_DEFIV
@@ -1452,6 +1450,7 @@
             this.TB_DEFIV.Size = new System.Drawing.Size(22, 20);
             this.TB_DEFIV.TabIndex = 3;
             this.TB_DEFIV.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.TB_DEFIV.Click += new System.EventHandler(this.clickIV);
             this.TB_DEFIV.TextChanged += new System.EventHandler(this.updateIVs);
             // 
             // TB_ATKIV
@@ -1463,6 +1462,7 @@
             this.TB_ATKIV.Size = new System.Drawing.Size(22, 20);
             this.TB_ATKIV.TabIndex = 2;
             this.TB_ATKIV.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.TB_ATKIV.Click += new System.EventHandler(this.clickIV);
             this.TB_ATKIV.TextChanged += new System.EventHandler(this.updateIVs);
             // 
             // TB_HPIV
@@ -1474,6 +1474,7 @@
             this.TB_HPIV.Size = new System.Drawing.Size(22, 20);
             this.TB_HPIV.TabIndex = 1;
             this.TB_HPIV.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.TB_HPIV.Click += new System.EventHandler(this.clickIV);
             this.TB_HPIV.TextChanged += new System.EventHandler(this.updateIVs);
             // 
             // TB_ATKEV
@@ -1485,6 +1486,7 @@
             this.TB_ATKEV.Size = new System.Drawing.Size(31, 20);
             this.TB_ATKEV.TabIndex = 8;
             this.TB_ATKEV.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.TB_ATKEV.Click += new System.EventHandler(this.clickEV);
             this.TB_ATKEV.TextChanged += new System.EventHandler(this.updateEVs);
             // 
             // TB_DEFEV
@@ -1496,6 +1498,7 @@
             this.TB_DEFEV.Size = new System.Drawing.Size(31, 20);
             this.TB_DEFEV.TabIndex = 9;
             this.TB_DEFEV.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.TB_DEFEV.Click += new System.EventHandler(this.clickEV);
             this.TB_DEFEV.TextChanged += new System.EventHandler(this.updateEVs);
             // 
             // TB_SPEEV
@@ -1507,6 +1510,7 @@
             this.TB_SPEEV.Size = new System.Drawing.Size(31, 20);
             this.TB_SPEEV.TabIndex = 12;
             this.TB_SPEEV.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.TB_SPEEV.Click += new System.EventHandler(this.clickEV);
             this.TB_SPEEV.TextChanged += new System.EventHandler(this.updateEVs);
             // 
             // TB_SPDEV
@@ -1518,6 +1522,7 @@
             this.TB_SPDEV.Size = new System.Drawing.Size(31, 20);
             this.TB_SPDEV.TabIndex = 11;
             this.TB_SPDEV.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.TB_SPDEV.Click += new System.EventHandler(this.clickEV);
             this.TB_SPDEV.TextChanged += new System.EventHandler(this.updateEVs);
             // 
             // TB_SPAEV
@@ -1529,6 +1534,7 @@
             this.TB_SPAEV.Size = new System.Drawing.Size(31, 20);
             this.TB_SPAEV.TabIndex = 10;
             this.TB_SPAEV.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.TB_SPAEV.Click += new System.EventHandler(this.clickEV);
             this.TB_SPAEV.TextChanged += new System.EventHandler(this.updateEVs);
             // 
             // TB_HPEV
@@ -1540,6 +1546,7 @@
             this.TB_HPEV.Size = new System.Drawing.Size(31, 20);
             this.TB_HPEV.TabIndex = 7;
             this.TB_HPEV.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.TB_HPEV.Click += new System.EventHandler(this.clickEV);
             this.TB_HPEV.TextChanged += new System.EventHandler(this.updateEVs);
             // 
             // Label_Sheen
@@ -1678,6 +1685,7 @@
             this.Label_SPE.TabIndex = 24;
             this.Label_SPE.Text = "Spe:";
             this.Label_SPE.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.Label_SPE.MouseDown += new System.Windows.Forms.MouseEventHandler(this.clickStatLabel);
             // 
             // Label_SPD
             // 
@@ -1687,6 +1695,7 @@
             this.Label_SPD.TabIndex = 23;
             this.Label_SPD.Text = "SpD:";
             this.Label_SPD.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.Label_SPD.MouseDown += new System.Windows.Forms.MouseEventHandler(this.clickStatLabel);
             // 
             // Label_SPA
             // 
@@ -1696,6 +1705,7 @@
             this.Label_SPA.TabIndex = 22;
             this.Label_SPA.Text = "SpA:";
             this.Label_SPA.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.Label_SPA.MouseDown += new System.Windows.Forms.MouseEventHandler(this.clickStatLabel);
             // 
             // Label_DEF
             // 
@@ -1705,6 +1715,7 @@
             this.Label_DEF.TabIndex = 21;
             this.Label_DEF.Text = "Def:";
             this.Label_DEF.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.Label_DEF.MouseDown += new System.Windows.Forms.MouseEventHandler(this.clickStatLabel);
             // 
             // Label_ATK
             // 
@@ -1714,6 +1725,7 @@
             this.Label_ATK.TabIndex = 20;
             this.Label_ATK.Text = "Atk:";
             this.Label_ATK.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.Label_ATK.MouseDown += new System.Windows.Forms.MouseEventHandler(this.clickStatLabel);
             // 
             // Label_HP
             // 
@@ -1723,6 +1735,7 @@
             this.Label_HP.TabIndex = 19;
             this.Label_HP.Text = "HP:";
             this.Label_HP.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.Label_HP.MouseDown += new System.Windows.Forms.MouseEventHandler(this.clickStatLabel);
             // 
             // TB_EVTotal
             // 
@@ -2495,7 +2508,7 @@
             this.TB_SID.TabIndex = 2;
             this.TB_SID.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.TB_SID.TextChanged += new System.EventHandler(this.update_ID);
-            this.TB_SID.MouseHover += new System.EventHandler(this.getTSV);
+            this.TB_SID.MouseHover += new System.EventHandler(this.updateTSV);
             // 
             // TB_TID
             // 
@@ -2507,7 +2520,7 @@
             this.TB_TID.TabIndex = 1;
             this.TB_TID.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.TB_TID.TextChanged += new System.EventHandler(this.update_ID);
-            this.TB_TID.MouseHover += new System.EventHandler(this.getTSV);
+            this.TB_TID.MouseHover += new System.EventHandler(this.updateTSV);
             // 
             // Label_OT
             // 
@@ -2556,15 +2569,6 @@
             this.Label_Diamond.TabIndex = 11;
             this.Label_Diamond.Text = " ♦";
             this.Label_Diamond.Visible = false;
-            // 
-            // OpenPKX
-            // 
-            this.OpenPKX.Filter = "PKX Files|*pk6;*.pkx|EKX Files|*ek6;*.ekx|Binary Files|*.bin|All Files|*.*";
-            // 
-            // SavePKX
-            // 
-            this.SavePKX.DefaultExt = "pk6";
-            this.SavePKX.Filter = "PKX File|*.pk6;*.pkx|EKX File|*.ek6;*.ekx|BIN File|*.bin|All Files|*.*";
             // 
             // menuStrip1
             // 
@@ -2786,7 +2790,6 @@
             this.bpkx30.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.bpkx30.TabIndex = 59;
             this.bpkx30.TabStop = false;
-            this.bpkx30.Click += new System.EventHandler(this.clickSlot);
             this.bpkx30.DragDrop += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragDrop);
             this.bpkx30.DragEnter += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragEnter);
             this.bpkx30.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
@@ -2800,7 +2803,6 @@
             this.bpkx29.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.bpkx29.TabIndex = 58;
             this.bpkx29.TabStop = false;
-            this.bpkx29.Click += new System.EventHandler(this.clickSlot);
             this.bpkx29.DragDrop += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragDrop);
             this.bpkx29.DragEnter += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragEnter);
             this.bpkx29.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
@@ -2814,7 +2816,6 @@
             this.bpkx28.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.bpkx28.TabIndex = 57;
             this.bpkx28.TabStop = false;
-            this.bpkx28.Click += new System.EventHandler(this.clickSlot);
             this.bpkx28.DragDrop += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragDrop);
             this.bpkx28.DragEnter += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragEnter);
             this.bpkx28.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
@@ -2828,7 +2829,6 @@
             this.bpkx27.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.bpkx27.TabIndex = 56;
             this.bpkx27.TabStop = false;
-            this.bpkx27.Click += new System.EventHandler(this.clickSlot);
             this.bpkx27.DragDrop += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragDrop);
             this.bpkx27.DragEnter += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragEnter);
             this.bpkx27.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
@@ -2842,7 +2842,6 @@
             this.bpkx26.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.bpkx26.TabIndex = 55;
             this.bpkx26.TabStop = false;
-            this.bpkx26.Click += new System.EventHandler(this.clickSlot);
             this.bpkx26.DragDrop += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragDrop);
             this.bpkx26.DragEnter += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragEnter);
             this.bpkx26.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
@@ -2856,7 +2855,6 @@
             this.bpkx25.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.bpkx25.TabIndex = 54;
             this.bpkx25.TabStop = false;
-            this.bpkx25.Click += new System.EventHandler(this.clickSlot);
             this.bpkx25.DragDrop += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragDrop);
             this.bpkx25.DragEnter += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragEnter);
             this.bpkx25.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
@@ -2870,7 +2868,6 @@
             this.bpkx24.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.bpkx24.TabIndex = 53;
             this.bpkx24.TabStop = false;
-            this.bpkx24.Click += new System.EventHandler(this.clickSlot);
             this.bpkx24.DragDrop += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragDrop);
             this.bpkx24.DragEnter += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragEnter);
             this.bpkx24.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
@@ -2884,7 +2881,6 @@
             this.bpkx23.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.bpkx23.TabIndex = 52;
             this.bpkx23.TabStop = false;
-            this.bpkx23.Click += new System.EventHandler(this.clickSlot);
             this.bpkx23.DragDrop += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragDrop);
             this.bpkx23.DragEnter += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragEnter);
             this.bpkx23.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
@@ -2898,7 +2894,6 @@
             this.bpkx22.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.bpkx22.TabIndex = 51;
             this.bpkx22.TabStop = false;
-            this.bpkx22.Click += new System.EventHandler(this.clickSlot);
             this.bpkx22.DragDrop += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragDrop);
             this.bpkx22.DragEnter += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragEnter);
             this.bpkx22.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
@@ -2912,7 +2907,6 @@
             this.bpkx21.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.bpkx21.TabIndex = 50;
             this.bpkx21.TabStop = false;
-            this.bpkx21.Click += new System.EventHandler(this.clickSlot);
             this.bpkx21.DragDrop += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragDrop);
             this.bpkx21.DragEnter += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragEnter);
             this.bpkx21.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
@@ -2926,7 +2920,6 @@
             this.bpkx20.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.bpkx20.TabIndex = 49;
             this.bpkx20.TabStop = false;
-            this.bpkx20.Click += new System.EventHandler(this.clickSlot);
             this.bpkx20.DragDrop += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragDrop);
             this.bpkx20.DragEnter += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragEnter);
             this.bpkx20.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
@@ -2940,7 +2933,6 @@
             this.bpkx19.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.bpkx19.TabIndex = 48;
             this.bpkx19.TabStop = false;
-            this.bpkx19.Click += new System.EventHandler(this.clickSlot);
             this.bpkx19.DragDrop += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragDrop);
             this.bpkx19.DragEnter += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragEnter);
             this.bpkx19.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
@@ -2954,7 +2946,6 @@
             this.bpkx18.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.bpkx18.TabIndex = 47;
             this.bpkx18.TabStop = false;
-            this.bpkx18.Click += new System.EventHandler(this.clickSlot);
             this.bpkx18.DragDrop += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragDrop);
             this.bpkx18.DragEnter += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragEnter);
             this.bpkx18.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
@@ -2968,7 +2959,6 @@
             this.bpkx17.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.bpkx17.TabIndex = 46;
             this.bpkx17.TabStop = false;
-            this.bpkx17.Click += new System.EventHandler(this.clickSlot);
             this.bpkx17.DragDrop += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragDrop);
             this.bpkx17.DragEnter += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragEnter);
             this.bpkx17.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
@@ -2982,7 +2972,6 @@
             this.bpkx16.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.bpkx16.TabIndex = 45;
             this.bpkx16.TabStop = false;
-            this.bpkx16.Click += new System.EventHandler(this.clickSlot);
             this.bpkx16.DragDrop += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragDrop);
             this.bpkx16.DragEnter += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragEnter);
             this.bpkx16.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
@@ -2996,7 +2985,6 @@
             this.bpkx15.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.bpkx15.TabIndex = 44;
             this.bpkx15.TabStop = false;
-            this.bpkx15.Click += new System.EventHandler(this.clickSlot);
             this.bpkx15.DragDrop += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragDrop);
             this.bpkx15.DragEnter += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragEnter);
             this.bpkx15.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
@@ -3010,7 +2998,6 @@
             this.bpkx14.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.bpkx14.TabIndex = 43;
             this.bpkx14.TabStop = false;
-            this.bpkx14.Click += new System.EventHandler(this.clickSlot);
             this.bpkx14.DragDrop += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragDrop);
             this.bpkx14.DragEnter += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragEnter);
             this.bpkx14.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
@@ -3024,7 +3011,6 @@
             this.bpkx13.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.bpkx13.TabIndex = 42;
             this.bpkx13.TabStop = false;
-            this.bpkx13.Click += new System.EventHandler(this.clickSlot);
             this.bpkx13.DragDrop += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragDrop);
             this.bpkx13.DragEnter += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragEnter);
             this.bpkx13.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
@@ -3038,7 +3024,6 @@
             this.bpkx12.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.bpkx12.TabIndex = 41;
             this.bpkx12.TabStop = false;
-            this.bpkx12.Click += new System.EventHandler(this.clickSlot);
             this.bpkx12.DragDrop += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragDrop);
             this.bpkx12.DragEnter += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragEnter);
             this.bpkx12.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
@@ -3052,7 +3037,6 @@
             this.bpkx11.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.bpkx11.TabIndex = 40;
             this.bpkx11.TabStop = false;
-            this.bpkx11.Click += new System.EventHandler(this.clickSlot);
             this.bpkx11.DragDrop += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragDrop);
             this.bpkx11.DragEnter += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragEnter);
             this.bpkx11.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
@@ -3066,7 +3050,6 @@
             this.bpkx10.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.bpkx10.TabIndex = 39;
             this.bpkx10.TabStop = false;
-            this.bpkx10.Click += new System.EventHandler(this.clickSlot);
             this.bpkx10.DragDrop += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragDrop);
             this.bpkx10.DragEnter += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragEnter);
             this.bpkx10.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
@@ -3080,7 +3063,6 @@
             this.bpkx9.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.bpkx9.TabIndex = 38;
             this.bpkx9.TabStop = false;
-            this.bpkx9.Click += new System.EventHandler(this.clickSlot);
             this.bpkx9.DragDrop += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragDrop);
             this.bpkx9.DragEnter += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragEnter);
             this.bpkx9.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
@@ -3094,7 +3076,6 @@
             this.bpkx8.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.bpkx8.TabIndex = 37;
             this.bpkx8.TabStop = false;
-            this.bpkx8.Click += new System.EventHandler(this.clickSlot);
             this.bpkx8.DragDrop += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragDrop);
             this.bpkx8.DragEnter += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragEnter);
             this.bpkx8.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
@@ -3108,7 +3089,6 @@
             this.bpkx7.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.bpkx7.TabIndex = 36;
             this.bpkx7.TabStop = false;
-            this.bpkx7.Click += new System.EventHandler(this.clickSlot);
             this.bpkx7.DragDrop += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragDrop);
             this.bpkx7.DragEnter += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragEnter);
             this.bpkx7.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
@@ -3122,7 +3102,6 @@
             this.bpkx6.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.bpkx6.TabIndex = 35;
             this.bpkx6.TabStop = false;
-            this.bpkx6.Click += new System.EventHandler(this.clickSlot);
             this.bpkx6.DragDrop += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragDrop);
             this.bpkx6.DragEnter += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragEnter);
             this.bpkx6.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
@@ -3136,7 +3115,6 @@
             this.bpkx5.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.bpkx5.TabIndex = 34;
             this.bpkx5.TabStop = false;
-            this.bpkx5.Click += new System.EventHandler(this.clickSlot);
             this.bpkx5.DragDrop += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragDrop);
             this.bpkx5.DragEnter += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragEnter);
             this.bpkx5.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
@@ -3150,7 +3128,6 @@
             this.bpkx4.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.bpkx4.TabIndex = 33;
             this.bpkx4.TabStop = false;
-            this.bpkx4.Click += new System.EventHandler(this.clickSlot);
             this.bpkx4.DragDrop += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragDrop);
             this.bpkx4.DragEnter += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragEnter);
             this.bpkx4.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
@@ -3164,7 +3141,6 @@
             this.bpkx3.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.bpkx3.TabIndex = 32;
             this.bpkx3.TabStop = false;
-            this.bpkx3.Click += new System.EventHandler(this.clickSlot);
             this.bpkx3.DragDrop += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragDrop);
             this.bpkx3.DragEnter += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragEnter);
             this.bpkx3.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
@@ -3178,7 +3154,6 @@
             this.bpkx2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.bpkx2.TabIndex = 31;
             this.bpkx2.TabStop = false;
-            this.bpkx2.Click += new System.EventHandler(this.clickSlot);
             this.bpkx2.DragDrop += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragDrop);
             this.bpkx2.DragEnter += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragEnter);
             this.bpkx2.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
@@ -3192,7 +3167,6 @@
             this.bpkx1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.bpkx1.TabIndex = 30;
             this.bpkx1.TabStop = false;
-            this.bpkx1.Click += new System.EventHandler(this.clickSlot);
             this.bpkx1.DragDrop += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragDrop);
             this.bpkx1.DragEnter += new System.Windows.Forms.DragEventHandler(this.pbBoxSlot_DragEnter);
             this.bpkx1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
@@ -3299,7 +3273,6 @@
             this.bbpkx1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
             this.bbpkx1.TabIndex = 8;
             this.bbpkx1.TabStop = false;
-            this.bbpkx1.Click += new System.EventHandler(this.clickSlot);
             this.bbpkx1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
             // 
             // bbpkx2
@@ -3310,7 +3283,6 @@
             this.bbpkx2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
             this.bbpkx2.TabIndex = 9;
             this.bbpkx2.TabStop = false;
-            this.bbpkx2.Click += new System.EventHandler(this.clickSlot);
             this.bbpkx2.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
             // 
             // bbpkx3
@@ -3321,7 +3293,6 @@
             this.bbpkx3.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
             this.bbpkx3.TabIndex = 10;
             this.bbpkx3.TabStop = false;
-            this.bbpkx3.Click += new System.EventHandler(this.clickSlot);
             this.bbpkx3.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
             // 
             // bbpkx4
@@ -3332,7 +3303,6 @@
             this.bbpkx4.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
             this.bbpkx4.TabIndex = 11;
             this.bbpkx4.TabStop = false;
-            this.bbpkx4.Click += new System.EventHandler(this.clickSlot);
             this.bbpkx4.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
             // 
             // bbpkx5
@@ -3343,7 +3313,6 @@
             this.bbpkx5.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
             this.bbpkx5.TabIndex = 12;
             this.bbpkx5.TabStop = false;
-            this.bbpkx5.Click += new System.EventHandler(this.clickSlot);
             this.bbpkx5.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
             // 
             // bbpkx6
@@ -3354,7 +3323,6 @@
             this.bbpkx6.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
             this.bbpkx6.TabIndex = 13;
             this.bbpkx6.TabStop = false;
-            this.bbpkx6.Click += new System.EventHandler(this.clickSlot);
             this.bbpkx6.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
             // 
             // L_ReadOnlyPBB
@@ -3408,7 +3376,6 @@
             this.ppkx1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
             this.ppkx1.TabIndex = 2;
             this.ppkx1.TabStop = false;
-            this.ppkx1.Click += new System.EventHandler(this.clickSlot);
             this.ppkx1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
             // 
             // ppkx2
@@ -3419,7 +3386,6 @@
             this.ppkx2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
             this.ppkx2.TabIndex = 3;
             this.ppkx2.TabStop = false;
-            this.ppkx2.Click += new System.EventHandler(this.clickSlot);
             this.ppkx2.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
             // 
             // ppkx3
@@ -3430,7 +3396,6 @@
             this.ppkx3.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
             this.ppkx3.TabIndex = 4;
             this.ppkx3.TabStop = false;
-            this.ppkx3.Click += new System.EventHandler(this.clickSlot);
             this.ppkx3.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
             // 
             // ppkx4
@@ -3441,7 +3406,6 @@
             this.ppkx4.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
             this.ppkx4.TabIndex = 5;
             this.ppkx4.TabStop = false;
-            this.ppkx4.Click += new System.EventHandler(this.clickSlot);
             this.ppkx4.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
             // 
             // ppkx5
@@ -3452,7 +3416,6 @@
             this.ppkx5.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
             this.ppkx5.TabIndex = 6;
             this.ppkx5.TabStop = false;
-            this.ppkx5.Click += new System.EventHandler(this.clickSlot);
             this.ppkx5.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
             // 
             // ppkx6
@@ -3463,7 +3426,6 @@
             this.ppkx6.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
             this.ppkx6.TabIndex = 7;
             this.ppkx6.TabStop = false;
-            this.ppkx6.Click += new System.EventHandler(this.clickSlot);
             this.ppkx6.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
             // 
             // Tab_Other
@@ -3577,11 +3539,12 @@
             // 
             this.TB_RNGSeed.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.TB_RNGSeed.Location = new System.Drawing.Point(61, 140);
+            this.TB_RNGSeed.MaxLength = 16;
             this.TB_RNGSeed.Name = "TB_RNGSeed";
-            this.TB_RNGSeed.ReadOnly = true;
             this.TB_RNGSeed.Size = new System.Drawing.Size(120, 20);
             this.TB_RNGSeed.TabIndex = 8;
             this.TB_RNGSeed.Text = "0123456789ABCDEF";
+            this.TB_RNGSeed.TextChanged += new System.EventHandler(this.updateEggRNGSeed);
             // 
             // dcpkx2
             // 
@@ -3592,7 +3555,6 @@
             this.dcpkx2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
             this.dcpkx2.TabIndex = 11;
             this.dcpkx2.TabStop = false;
-            this.dcpkx2.Click += new System.EventHandler(this.clickSlot);
             this.dcpkx2.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
             // 
             // dcpkx1
@@ -3604,7 +3566,6 @@
             this.dcpkx1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
             this.dcpkx1.TabIndex = 10;
             this.dcpkx1.TabStop = false;
-            this.dcpkx1.Click += new System.EventHandler(this.clickSlot);
             this.dcpkx1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
             // 
             // DayCare_HasEgg
@@ -3637,7 +3598,6 @@
             this.gtspkx.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
             this.gtspkx.TabIndex = 23;
             this.gtspkx.TabStop = false;
-            this.gtspkx.Click += new System.EventHandler(this.clickSlot);
             this.gtspkx.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
             // 
             // GB_Fused
@@ -3659,7 +3619,6 @@
             this.fusedpkx.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
             this.fusedpkx.TabIndex = 24;
             this.fusedpkx.TabStop = false;
-            this.fusedpkx.Click += new System.EventHandler(this.clickSlot);
             this.fusedpkx.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
             // 
             // L_ReadOnlyOther
@@ -3693,7 +3652,6 @@
             this.subepkx1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
             this.subepkx1.TabIndex = 18;
             this.subepkx1.TabStop = false;
-            this.subepkx1.Click += new System.EventHandler(this.clickSlot);
             this.subepkx1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbBoxSlot_MouseDown);
             // 
             // subepkx2
@@ -3718,7 +3676,6 @@
             // 
             // Tab_Tools
             // 
-            this.Tab_Tools.Controls.Add(this.B_SaveBoxBin);
             this.Tab_Tools.Controls.Add(this.B_3DSSETemp);
             this.Tab_Tools.Controls.Add(this.B_JPEG);
             this.Tab_Tools.Controls.Add(this.RTB_T);
@@ -3729,16 +3686,6 @@
             this.Tab_Tools.TabIndex = 4;
             this.Tab_Tools.Text = "Tools";
             this.Tab_Tools.UseVisualStyleBackColor = true;
-            // 
-            // B_SaveBoxBin
-            // 
-            this.B_SaveBoxBin.Location = new System.Drawing.Point(122, 20);
-            this.B_SaveBoxBin.Name = "B_SaveBoxBin";
-            this.B_SaveBoxBin.Size = new System.Drawing.Size(75, 45);
-            this.B_SaveBoxBin.TabIndex = 8;
-            this.B_SaveBoxBin.Text = "Save Box Data++";
-            this.B_SaveBoxBin.UseVisualStyleBackColor = true;
-            this.B_SaveBoxBin.Click += new System.EventHandler(this.B_SaveBoxBin_Click);
             // 
             // B_3DSSETemp
             // 
@@ -3774,11 +3721,10 @@
             // 
             // Tab_SAV
             // 
+            this.Tab_SAV.Controls.Add(this.B_SaveBoxBin);
             this.Tab_SAV.Controls.Add(this.L_SAVManipulation);
-            this.Tab_SAV.Controls.Add(this.B_SwitchSAV);
             this.Tab_SAV.Controls.Add(this.B_VerifyCHK);
             this.Tab_SAV.Controls.Add(this.L_IntegrityCheck);
-            this.Tab_SAV.Controls.Add(this.B_VerifySHA);
             this.Tab_SAV.Controls.Add(this.B_ExportSAV);
             this.Tab_SAV.Controls.Add(this.RTB_S);
             this.Tab_SAV.Location = new System.Drawing.Point(4, 22);
@@ -3788,32 +3734,31 @@
             this.Tab_SAV.Text = "SAV";
             this.Tab_SAV.UseVisualStyleBackColor = true;
             // 
+            // B_SaveBoxBin
+            // 
+            this.B_SaveBoxBin.Location = new System.Drawing.Point(117, 20);
+            this.B_SaveBoxBin.Name = "B_SaveBoxBin";
+            this.B_SaveBoxBin.Size = new System.Drawing.Size(75, 45);
+            this.B_SaveBoxBin.TabIndex = 8;
+            this.B_SaveBoxBin.Text = "Save Box Data++";
+            this.B_SaveBoxBin.UseVisualStyleBackColor = true;
+            this.B_SaveBoxBin.Click += new System.EventHandler(this.B_SaveBoxBin_Click);
+            // 
             // L_SAVManipulation
             // 
             this.L_SAVManipulation.AutoSize = true;
-            this.L_SAVManipulation.Location = new System.Drawing.Point(154, 7);
+            this.L_SAVManipulation.Location = new System.Drawing.Point(208, 7);
             this.L_SAVManipulation.Name = "L_SAVManipulation";
-            this.L_SAVManipulation.Size = new System.Drawing.Size(117, 13);
+            this.L_SAVManipulation.Size = new System.Drawing.Size(54, 13);
             this.L_SAVManipulation.TabIndex = 7;
-            this.L_SAVManipulation.Text = "Save File Manipulation:";
-            // 
-            // B_SwitchSAV
-            // 
-            this.B_SwitchSAV.Enabled = false;
-            this.B_SwitchSAV.Location = new System.Drawing.Point(122, 20);
-            this.B_SwitchSAV.Name = "B_SwitchSAV";
-            this.B_SwitchSAV.Size = new System.Drawing.Size(75, 45);
-            this.B_SwitchSAV.TabIndex = 6;
-            this.B_SwitchSAV.Text = "Switch SAV";
-            this.B_SwitchSAV.UseVisualStyleBackColor = true;
-            this.B_SwitchSAV.Click += new System.EventHandler(this.clickSwitchSAV);
+            this.L_SAVManipulation.Text = "Save File:";
             // 
             // B_VerifyCHK
             // 
             this.B_VerifyCHK.Enabled = false;
             this.B_VerifyCHK.Location = new System.Drawing.Point(32, 20);
             this.B_VerifyCHK.Name = "B_VerifyCHK";
-            this.B_VerifyCHK.Size = new System.Drawing.Size(75, 23);
+            this.B_VerifyCHK.Size = new System.Drawing.Size(75, 45);
             this.B_VerifyCHK.TabIndex = 2;
             this.B_VerifyCHK.Text = "Checksums";
             this.B_VerifyCHK.UseVisualStyleBackColor = true;
@@ -3827,17 +3772,6 @@
             this.L_IntegrityCheck.Size = new System.Drawing.Size(81, 13);
             this.L_IntegrityCheck.TabIndex = 5;
             this.L_IntegrityCheck.Text = "Integrity Check:";
-            // 
-            // B_VerifySHA
-            // 
-            this.B_VerifySHA.Enabled = false;
-            this.B_VerifySHA.Location = new System.Drawing.Point(32, 42);
-            this.B_VerifySHA.Name = "B_VerifySHA";
-            this.B_VerifySHA.Size = new System.Drawing.Size(75, 23);
-            this.B_VerifySHA.TabIndex = 1;
-            this.B_VerifySHA.Text = "Hashes";
-            this.B_VerifySHA.UseVisualStyleBackColor = true;
-            this.B_VerifySHA.Click += new System.EventHandler(this.clickVerifySHA);
             // 
             // B_ExportSAV
             // 
@@ -4003,15 +3937,6 @@
             this.B_OpenSuperTraining.UseVisualStyleBackColor = true;
             this.B_OpenSuperTraining.Click += new System.EventHandler(this.B_OpenSuperTraining_Click);
             // 
-            // L_SAVINDEX
-            // 
-            this.L_SAVINDEX.AutoSize = true;
-            this.L_SAVINDEX.Location = new System.Drawing.Point(600, 5);
-            this.L_SAVINDEX.Name = "L_SAVINDEX";
-            this.L_SAVINDEX.Size = new System.Drawing.Size(13, 13);
-            this.L_SAVINDEX.TabIndex = 16;
-            this.L_SAVINDEX.Text = "0";
-            // 
             // dragout
             // 
             this.dragout.BackColor = System.Drawing.Color.Transparent;
@@ -4038,7 +3963,7 @@
             this.L_QR.Visible = false;
             this.L_QR.Click += new System.EventHandler(this.clickQR);
             // 
-            // Form1
+            // Main
             // 
             this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -4046,7 +3971,6 @@
             this.ClientSize = new System.Drawing.Size(614, 362);
             this.Controls.Add(this.dragout);
             this.Controls.Add(this.L_QR);
-            this.Controls.Add(this.L_SAVINDEX);
             this.Controls.Add(this.GB_SAVtools);
             this.Controls.Add(this.tabBoxMulti);
             this.Controls.Add(this.L_Save);
@@ -4055,7 +3979,7 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
-            this.Name = "Form1";
+            this.Name = "Main";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "PKHeX";
             this.tabMain.ResumeLayout(false);
@@ -4198,8 +4122,6 @@
         private System.Windows.Forms.Label Label_Country;
         private System.Windows.Forms.Label Label_PKRSdays;
         private System.Windows.Forms.Label Label_PKRS;
-        private System.Windows.Forms.OpenFileDialog OpenPKX;
-        private System.Windows.Forms.SaveFileDialog SavePKX;
         private System.Windows.Forms.Button BTN_RerollEC;
         private System.Windows.Forms.Button BTN_History;
         private System.Windows.Forms.Button BTN_Ribbons;
@@ -4261,7 +4183,6 @@
         private System.Windows.Forms.TextBox Stat_HP;
         private System.Windows.Forms.Label Label_PrevOT;
         private System.Windows.Forms.ComboBox CB_EncounterType;
-        public System.Windows.Forms.ComboBox CB_GameOrigin;
         private System.Windows.Forms.GroupBox GB_EggConditions;
         private System.Windows.Forms.Label Label_EggDate;
         private System.Windows.Forms.Label Label_EggLocation;
@@ -4295,12 +4216,9 @@
         private System.Windows.Forms.MaskedTextBox TB_Cool;
         private System.Windows.Forms.MaskedTextBox TB_SID;
         private System.Windows.Forms.MaskedTextBox TB_TID;
-        public System.Windows.Forms.MaskedTextBox TB_Friendship;
         private System.Windows.Forms.MaskedTextBox TB_Level;
         private System.Windows.Forms.MaskedTextBox TB_EXP;
         private System.Windows.Forms.MaskedTextBox TB_ExtraByte;
-        public System.Windows.Forms.TextBox TB_OTt2;
-        public System.Windows.Forms.TextBox TB_OT;
         private System.Windows.Forms.Label Label_HeldItem;
         private System.Windows.Forms.CheckBox CHK_Cured;
         private System.Windows.Forms.CheckBox CHK_Infected;
@@ -4399,8 +4317,6 @@
         private System.Windows.Forms.TabPage Tab_SAV;
         private System.Windows.Forms.Button B_ExportSAV;
         private System.Windows.Forms.Button B_VerifyCHK;
-        private System.Windows.Forms.Button B_VerifySHA;
-        private System.Windows.Forms.RichTextBox RTB_S;
         private System.Windows.Forms.Button B_BoxRight;
         private System.Windows.Forms.Button B_BoxLeft;
         private System.Windows.Forms.Label L_XP2;
@@ -4417,9 +4333,7 @@
         private System.Windows.Forms.RichTextBox RTB_T;
         private System.Windows.Forms.Button B_JPEG;
         private System.Windows.Forms.Label L_SAVManipulation;
-        private System.Windows.Forms.Button B_SwitchSAV;
         private System.Windows.Forms.Label L_IntegrityCheck;
-        private System.Windows.Forms.Label L_SAVINDEX;
         private System.Windows.Forms.ComboBox CB_EggLocation;
         private System.Windows.Forms.Label Label_CharacteristicPrefix;
         private System.Windows.Forms.ToolStripMenuItem Menu_Tools;
@@ -4429,10 +4343,7 @@
         private System.Windows.Forms.ToolStripComboBox CB_MainLanguage;
         private System.Windows.Forms.ToolStripMenuItem Menu_About;
         private System.Windows.Forms.ToolStripMenuItem Menu_BoxIO;
-        public System.Windows.Forms.ComboBox CB_Move1;
         public System.Windows.Forms.ComboBox CB_MetLocation;
-        public System.Windows.Forms.Label Label_Friendship;
-        public System.Windows.Forms.Label Label_HatchCounter;
         private System.Windows.Forms.Label Label_CTGender;
         private System.Windows.Forms.Label Label_OTGender;
         private System.Windows.Forms.PictureBox PB_MarkPentagon;
@@ -4456,7 +4367,6 @@
         private System.Windows.Forms.Button B_OpenSuperTraining;
         private System.Windows.Forms.Button B_3DSSETemp;
         private System.Windows.Forms.Panel PAN_Box;
-        public System.Windows.Forms.ComboBox CB_BoxSelect;
         private System.Windows.Forms.ComboBox DEV_Ability;
         private System.Windows.Forms.CheckBox CHK_HackedStats;
         private System.Windows.Forms.MaskedTextBox MT_Level;
@@ -4464,14 +4374,23 @@
         private System.Windows.Forms.Button B_OpenSecretBase;
         private System.Windows.Forms.ToolStripMenuItem Menu_Unicode;
         public System.Windows.Forms.ComboBox CB_Ball;
-        public System.Windows.Forms.ComboBox CB_HeldItem;
-        public System.Windows.Forms.ComboBox CB_Nature;
         private System.Windows.Forms.PictureBox dragout;
         public System.Windows.Forms.ComboBox CB_Species;
         public System.Windows.Forms.CheckBox CHK_IsEgg;
         private System.Windows.Forms.Button B_SaveBoxBin;
         private System.Windows.Forms.Label L_QR;
         private System.Windows.Forms.ComboBox CB_HPType;
+        private System.Windows.Forms.RichTextBox RTB_S;
+        private System.Windows.Forms.ComboBox CB_HeldItem;
+        private System.Windows.Forms.ComboBox CB_Nature;
+        private System.Windows.Forms.MaskedTextBox TB_Friendship;
+        private System.Windows.Forms.ComboBox CB_Move1;
+        private System.Windows.Forms.ComboBox CB_BoxSelect;
+        public System.Windows.Forms.Label Label_Friendship;
+        public System.Windows.Forms.Label Label_HatchCounter;
+        private System.Windows.Forms.TextBox TB_OTt2;
+        private System.Windows.Forms.TextBox TB_OT;
+        private System.Windows.Forms.ComboBox CB_GameOrigin;
     }
 }
 
